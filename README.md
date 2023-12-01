@@ -4,9 +4,11 @@ _不揪 Food Date_ is a powerful restaurant gathering app.
 
 ## For development only
 
-### Warning
+### Warnings
 
-Please do not refresh or reload the website unless necessary. Each refresh uses a quota.
+- Please do not refresh or reload the website unless necessary. Each refresh uses a quota.
+- Please DO NOT commit any API keys to the repository. If you need to use an API key,
+  put it in `.env` and do not commit it (`.env` is included in `.gitignore`).
 
 ### Running the app
 
