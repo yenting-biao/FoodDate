@@ -10,6 +10,9 @@ export default function Home() {
   const [restaurantName, setRestaurantName] = useState<string>("");
   const [restaurantAddress, setRestaurantAddress] = useState<string>("");
 
+  // tmporary 
+  const [types, setTypes] = useState<string[]>([]);
+
   const handleMapClick = async (event: any) => { // TODO: fix event type
     setPosition({lat: event.detail.latLng.lat, lng: event.detail.latLng.lng});
     const placeId = event.detail.placeId;
@@ -17,8 +20,9 @@ export default function Home() {
     if(!placeId) return;
 
     try {
-      const res = await fetch(`https://places.googleapis.com/v1/places/${placeId}?fields=id,displayName,formattedAddress&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`);
+      const res = await fetch(`https://places.googleapis.com/v1/places/${placeId}?fields=id,displayName,formattedAddress,types&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`);
       const data = await res.json();
+      console.log("data", data);
       /* 
         {
           displayName: {
@@ -27,6 +31,9 @@ export default function Home() {
           }
           formattedAddress: "Address"
           id: "placeId"
+          types: [
+
+          ]
         }
       */
       /* Below are useless. Just for future reference if needed
@@ -40,6 +47,7 @@ export default function Home() {
       });*/
       setRestaurantName(data.displayName.text);
       setRestaurantAddress(data.formattedAddress);
+      setTypes(data.types);
       
     } catch (error) {
       console.error('Error fetching place details:', error);
@@ -61,6 +69,15 @@ export default function Home() {
             </div>
             <div className="text-sm">
               {restaurantAddress}
+            </div>
+            <div>
+              {types.map((type, index) => {
+                return (
+                  <div key={index}>
+                    {type}
+                  </div>
+                );
+              })}
             </div>
           </div>
           <div className="h-screen w-3/4">
