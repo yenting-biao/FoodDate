@@ -19,7 +19,6 @@ yarn install
 ```
 
 2. Create a copy of `.env.example` as `.env.local` and replace `"YOUR-API-KEY-HERE"` with your Google API key.
-
 3. Start the app
 
 ```bash
@@ -28,4 +27,4 @@ yarn dev
 
 ### Resources
 
-react-google-maps Docs: https://visgl.github.io/react-google-maps/
+react-google-maps Docs: [https://visgl.github.io/react-google-maps/](https://visgl.github.io/react-google-maps/)
