@@ -68,7 +68,7 @@ export default function Home() {
         } else {
           setRestaurantName("你沒越界但是不是餐廳給我滾回去");
           setRestaurantAddress("");
-          setTypes([]);
+          setTypes(data.types);
         }        
       } else {
         setRestaurantName("你越界了給我滾回去");
