@@ -23,7 +23,6 @@ export default function Home() {
 
   const handleMapClick = async (event: any) => {
     // TODO: fix event type
-    setPosition({ lat: event.detail.latLng.lat, lng: event.detail.latLng.lng });
     const placeId = event.detail.placeId;
     console.log("placeId", placeId);
     if (!placeId) return;
@@ -56,9 +55,26 @@ export default function Home() {
           "Access-Control-Allow-Origin": "*",
         },        
       });*/
-      setRestaurantName(data.displayName.text);
-      setRestaurantAddress(data.formattedAddress);
-      setTypes(data.types);
+      const addr: string = data.formattedAddress;
+      const name: string = data.displayName.text;
+      
+      if (addr.includes("大安區") || addr.includes("大安区") || addr.includes("中正區") || addr.includes("中正区")) {
+        if (data.types.includes("restaurant")) {
+          // the only correct use operation
+          setPosition({ lat: event.detail.latLng.lat, lng: event.detail.latLng.lng });
+          setRestaurantName(name);
+          setRestaurantAddress(addr);
+          setTypes(data.types);
+        } else {
+          setRestaurantName("你沒越界但是不是餐廳給我滾回去");
+          setRestaurantAddress("");
+          setTypes([]);
+        }        
+      } else {
+        setRestaurantName("你越界了給我滾回去");
+        setRestaurantAddress("");
+        setTypes([]);
+      }      
     } catch (error) {
       console.error("Error fetching place details:", error);
     }
