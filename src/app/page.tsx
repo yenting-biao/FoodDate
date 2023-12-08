@@ -23,7 +23,7 @@ export default function Home() {
   const [restaurantName, setRestaurantName] = useState<string>("");
   const [restaurantAddress, setRestaurantAddress] = useState<string>("");
   const [openAuthModal, setOpenAuthModal] = useState<boolean>(false);
-  
+
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -114,7 +114,7 @@ export default function Home() {
     <>
       <Header onOpenAuthModal={handleOpenAuthModal} />
       <main className="flex min-h-screen items-center justify-center w-full">
-      {openAuthModal === true && (
+      {openAuthModal && (
         <div className="fixed inset-0 z-10 flex items-center justify-center bg-black bg-opacity-50">
           <AuthForm onCloseAuthModal={handleCloseAuthModal} />
         </div>
