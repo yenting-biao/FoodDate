@@ -1,26 +1,37 @@
 "use client";
-import { APIProvider, Map, Marker, useMapsLibrary } from "@vis.gl/react-google-maps";
+import {
+  APIProvider,
+  Map,
+  Marker,
+  useMapsLibrary,
+} from "@vis.gl/react-google-maps";
 import { useState, useEffect } from "react";
 
 import Header from "./_components/Header";
 
 export default function Home() {
-  const [position, setPosition] = useState({ lat: 25.01834354450372, lng: 121.53977457666448 });
-  
+  const [position, setPosition] = useState({
+    lat: 25.01834354450372,
+    lng: 121.53977457666448,
+  });
+
   const [restaurantName, setRestaurantName] = useState<string>("");
   const [restaurantAddress, setRestaurantAddress] = useState<string>("");
 
-  // tmporary 
+  // tmporary
   const [types, setTypes] = useState<string[]>([]);
 
-  const handleMapClick = async (event: any) => { // TODO: fix event type
-    setPosition({lat: event.detail.latLng.lat, lng: event.detail.latLng.lng});
+  const handleMapClick = async (event: any) => {
+    // TODO: fix event type
+    setPosition({ lat: event.detail.latLng.lat, lng: event.detail.latLng.lng });
     const placeId = event.detail.placeId;
     console.log("placeId", placeId);
-    if(!placeId) return;
+    if (!placeId) return;
 
     try {
-      const res = await fetch(`https://places.googleapis.com/v1/places/${placeId}?fields=id,displayName,formattedAddress,types&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`);
+      const res = await fetch(
+        `https://places.googleapis.com/v1/places/${placeId}?fields=id,displayName,formattedAddress,types&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`
+      );
       const data = await res.json();
       console.log("data", data);
       /* 
@@ -48,11 +59,10 @@ export default function Home() {
       setRestaurantName(data.displayName.text);
       setRestaurantAddress(data.formattedAddress);
       setTypes(data.types);
-      
     } catch (error) {
-      console.error('Error fetching place details:', error);
+      console.error("Error fetching place details:", error);
     }
-  }
+  };
 
   return (
     <>
@@ -64,45 +74,39 @@ export default function Home() {
               餐廳資訊
               {position.lat + " - " + position.lng}
   </div>*/}
-            <div className="text-xl font-medium">
-              {restaurantName}
-            </div>
-            <div className="text-sm">
-              {restaurantAddress}
-            </div>
+            <div className="text-xl font-medium">{restaurantName}</div>
+            <div className="text-sm">{restaurantAddress}</div>
             <div>
               {types.map((type, index) => {
-                return (
-                  <div key={index}>
-                    {type}
-                  </div>
-                );
+                return <div key={index}>{type}</div>;
               })}
             </div>
           </div>
           <div className="h-screen w-3/4">
-            <Map center={position} zoom={15} onClick={handleMapClick}>
-              <Marker 
-                position={position}
-              />
+            <Map
+              center={position}
+              zoom={15}
+              onClick={handleMapClick}
+              mapId={process.env.NEXT_PUBLIC_MAP_ID}
+            >
+              <Marker position={position} />
             </Map>
           </div>
-        </APIProvider>        
+        </APIProvider>
       </main>
     </>
-    
   );
 }
 
 type GeocodingProps = {
   placeId: string;
-}
+};
 
 function Place() {
   // triggers loading the places library and returns the API Object once complete (the
   // component calling the hook gets automatically re-rendered when this is
   // the case)
-  const placesLibrary = useMapsLibrary('places');
+  const placesLibrary = useMapsLibrary("places");
 
   const [placesService, setPlacesService] = useState(null);
 
@@ -124,7 +128,7 @@ function Place() {
 }
 
 function Geocoding({ placeId }: GeocodingProps) {
-  const geocodingLibrary = useMapsLibrary('geocoding');
+  const geocodingLibrary = useMapsLibrary("geocoding");
   useEffect(() => {
     if (!geocodingLibrary) return;
 
