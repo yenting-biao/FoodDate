@@ -7,19 +7,48 @@ import {
 } from "@vis.gl/react-google-maps";
 import { useState, useEffect } from "react";
 
+
 import Header from "./_components/Header";
+import AuthForm from "./_components/AuthForm";
 
 export default function Home() {
   const [position, setPosition] = useState({
     lat: 25.01834354450372,
     lng: 121.53977457666448,
   });
-
+  const [userPosition, setUserPosition] = useState({
+    lat: 25.01834354450372,
+    lng: 121.53977457666448,
+  });
   const [restaurantName, setRestaurantName] = useState<string>("");
   const [restaurantAddress, setRestaurantAddress] = useState<string>("");
+  const [openAuthModal, setOpenAuthModal] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setUserPosition({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          });
+        }
+      );
+    }
+  }, []);//don't remove the empty dependency array!!!
 
   // tmporary
   const [types, setTypes] = useState<string[]>([]);
+  const handleOpenAuthModal = () => {
+    setOpenAuthModal(true);
+  };
+  const handleCloseAuthModal = () => {
+    setOpenAuthModal(false);
+  };
+  const blueMarkerIcon = {
+    url: 'http://maps.google.com/mapfiles/ms/icons/green-dot.png', // URL to a blue marker icon
+
+  };
 
   const handleMapClick = async (event: any) => {
     // TODO: fix event type
@@ -58,6 +87,7 @@ export default function Home() {
       const addr: string = data.formattedAddress;
       const name: string = data.displayName.text;
       
+      
       if (addr.includes("大安區") || addr.includes("大安区") || addr.includes("中正區") || addr.includes("中正区")) {
         if (data.types.includes("restaurant")) {
           // the only correct use operation
@@ -82,8 +112,13 @@ export default function Home() {
 
   return (
     <>
-      <Header />
+      <Header onOpenAuthModal={handleOpenAuthModal} />
       <main className="flex min-h-screen items-center justify-center w-full">
+      {openAuthModal && (
+        <div className="fixed inset-0 z-10 flex items-center justify-center bg-black bg-opacity-50">
+          <AuthForm onCloseAuthModal={handleCloseAuthModal} />
+        </div>
+      )}
         <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!}>
           <div className="h-screen w-1/4 bg-white text-black p-3">
             {/*<div>
@@ -105,7 +140,8 @@ export default function Home() {
               onClick={handleMapClick}
               mapId={process.env.NEXT_PUBLIC_MAP_ID}
             >
-              <Marker position={position} />
+              <Marker position={position}/>
+              <Marker position={userPosition} icon={blueMarkerIcon}/>
             </Map>
           </div>
         </APIProvider>
