@@ -1,6 +1,7 @@
 Table USERS {
+  id uuid [primary key, default: `gen_random_uuid()`]
   ntuEmail varchar(63) [not null, unique]
-  username varchar(80) [primary key]
+  username varchar(80) [not null]
   hashedPassword varchar(255) [not null]
 }
 
@@ -20,26 +21,26 @@ Ref: RESTAURANT_TYPES.placeId > RESTAURANTS.placeId [delete: cascade, update: ca
 
 Table REVIEWS {
   placeId varchar(300) [primary key]
-  reviewerUsername varchar(80) [primary key]
+  reviewerId uuid [primary key]
   stars int [not null]
   content varchar(2000)
   expenditure int
   createdAt timestamp [not null, default: `now()`]
 }
 Ref: REVIEWS.placeId > RESTAURANTS.placeId [delete: cascade, update: cascade]
-Ref: REVIEWS.reviewerUsername > USERS.username [delete: set null, update: cascade]
+Ref: REVIEWS.reviewerId > USERS.id [delete: set null, update: cascade]
 
 Table TAGS {
   tagId uuid [primary key, default: `gen_random_uuid()`]
-  tagName varchar(50)
+  tagName varchar(50) [not null]
 }
 
 Table TAG_OWNERS {
   tagId uuid [primary key]
-  ownerUsername varchar(80) [primary key]
+  ownerId uuid [primary key]
 }
 Ref: TAG_OWNERS.tagId > TAGS.tagId [delete: cascade, update: cascade]
-Ref: TAG_OWNERS.ownerUsername > USERS.username [delete: cascade, update: cascade]
+Ref: TAG_OWNERS.ownerId > USERS.id [delete: cascade, update: cascade]
 
 Table TAGGED_RESTAURANTS {
   tagId uuid [primary key]
@@ -55,23 +56,23 @@ Table DATES {
 
 Table DATE_PARTICIPANTS {
   dateId uuid [primary key]
-  participantUsername varchar(80) [primary key]
+  participantId uuid [primary key]
 }
 Ref: DATE_PARTICIPANTS.dateId > DATES.dateId [delete: cascade, update: cascade]
-Ref: DATE_PARTICIPANTS.participantUsername > USERS.username [delete: set null, update: cascade]
+Ref: DATE_PARTICIPANTS.participantId > USERS.id [delete: set null, update: cascade]
 
 Table GLOBAL_MESSAGES {
-  senderUsername varchar(80) [primary key]
+  senderId uuid [primary key]
   sentAt timestamp [primary key, default: `now()`]
   content varchar(1000) [not null]
 }
-Ref: GLOBAL_MESSAGES.senderUsername > USERS.username [delete: set null, update: cascade]
+Ref: GLOBAL_MESSAGES.senderId > USERS.id [delete: set null, update: cascade]
 
 TABLE PRIVATE_MESSAGES {
   dateId uuid [primary key]
-  senderUsername varchar(80) [primary key]
+  senderId uuid [primary key]
   sentAt timestamp [primary key, default: `now()`]
   content varchar(1000) [not null]
 }
 Ref: PRIVATE_MESSAGES.dateId > DATES.dateId [delete: cascade, update: cascade]
-Ref: PRIVATE_MESSAGES.senderUsername > USERS.username [delete: set null, update: cascade]
+Ref: PRIVATE_MESSAGES.senderId > USERS.id [delete: set null, update: cascade]
