@@ -1,4 +1,4 @@
-export default function MapLayout({
+export default function FoodDateLayout({
   children,
 }: {
   children: React.ReactNode

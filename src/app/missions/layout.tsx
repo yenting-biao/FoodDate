@@ -1,4 +1,4 @@
-export default function MapLayout({
+export default function MissionLayout({
   children,
 }: {
   children: React.ReactNode
