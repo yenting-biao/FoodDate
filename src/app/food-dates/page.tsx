@@ -78,7 +78,7 @@ export default function FoodDatePage () {
             一起吃飯，賺取金幣，換取獎勵！
           </Typography>
           <Divider className="w-1/4 my-4"/>
-          <div className="w-1/4 mt-2">
+          <div className="px-6 mt-2">
             <FormControl fullWidth className="flex flex-col gap-5">
               <div className="flex flex-col items-start">
                 <Typography variant="h6">
@@ -178,7 +178,7 @@ export default function FoodDatePage () {
           </div>
 
           {submitting && 
-          <div className="w-1/4 mt-2 flex flex-col items-center">
+          <div className="mt-2 flex flex-col items-center">
             <Typography variant="h6" className="text-center mt-2 mb-3">
               你選擇的結果如下，你還有{countdown}秒鐘可以反悔，{countdown}秒鐘後會開始配對......
             </Typography>
