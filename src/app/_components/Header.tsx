@@ -3,6 +3,7 @@
 import AuthForm from "../_components/AuthForm";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Avatar, Badge, IconButton, ListItemIcon, ListItemText, Tooltip, Typography, Menu, MenuItem } from "@mui/material";
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import MenuIcon from '@mui/icons-material/Menu';
@@ -23,9 +24,11 @@ export default function Header() {
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
   };
-  const handleClose = () => {
+  const handleClose = (path: string) => {
     setAnchorEl(null);
   };
+
+  const router = useRouter();
 
   // temporary variables
   const [auth, setAuth] = useState<boolean>(true); 
@@ -68,7 +71,10 @@ export default function Header() {
                   'aria-labelledby': 'apps-button',
                 }}
               >
-                <MenuItem onClick={handleClose}>
+                <MenuItem onClick={() => {
+                  setAnchorEl(null);
+                  router.push("/missions");
+                }}>
                   <ListItemIcon>
                     <Settings fontSize="small" />
                   </ListItemIcon>
@@ -77,7 +83,10 @@ export default function Header() {
                   </ListItemText>
                 </MenuItem>
 
-                <MenuItem onClick={handleClose}>
+                <MenuItem onClick={() => {
+                  setAnchorEl(null);
+                  router.push("/restaurants");
+                }}>
                   <ListItemIcon>
                     <Settings fontSize="small" />
                   </ListItemIcon>
@@ -86,7 +95,10 @@ export default function Header() {
                   </ListItemText>
                 </MenuItem>
 
-                <MenuItem onClick={handleClose}>
+                <MenuItem onClick={() => {
+                  setAnchorEl(null);
+                  router.push("/food-dates");
+                }}>
                   <ListItemIcon>
                     <Settings fontSize="small" />
                   </ListItemIcon>

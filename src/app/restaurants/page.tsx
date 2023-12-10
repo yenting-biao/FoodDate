@@ -11,7 +11,7 @@ import { useState, useEffect } from "react";
 import Header from "../_components/Header";
 
 
-export default function Home() {
+export default function RestaurantPage() {
   const [position, setPosition] = useState({
     lat: 25.01834354450372,
     lng: 121.53977457666448,
