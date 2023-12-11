@@ -25,7 +25,7 @@ Table REVIEWS {
   reviewerId uuid [primary key]
   stars int [not null]
   content varchar(2000)
-  expenditure int
+  expense int
   createdAt timestamp [not null, default: `now()`]
 }
 Ref: REVIEWS.placeId > RESTAURANTS.placeId [delete: cascade, update: cascade]
@@ -61,13 +61,6 @@ Table DATE_PARTICIPANTS {
 }
 Ref: DATE_PARTICIPANTS.dateId > DATES.dateId [delete: cascade, update: cascade]
 Ref: DATE_PARTICIPANTS.participantId > USERS.id [delete: set null, update: cascade]
-
-Table GLOBAL_MESSAGES {
-  senderId uuid [primary key]
-  sentAt timestamp [primary key, default: `now()`]
-  content varchar(1000) [not null]
-}
-Ref: GLOBAL_MESSAGES.senderId > USERS.id [delete: set null, update: cascade]
 
 TABLE PRIVATE_MESSAGES {
   dateId uuid [primary key]
