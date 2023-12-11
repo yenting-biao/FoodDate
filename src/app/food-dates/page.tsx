@@ -1,7 +1,17 @@
 "use client"
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 
-import { Button, Checkbox, Divider, FormControl, FormControlLabel, InputLabel, MenuItem, Select, SelectChangeEvent, TextField, Typography } from "@mui/material";
+import { Button, Checkbox, Divider, FormControl, FormControlLabel, InputLabel, MenuItem, Snackbar, TextField, Typography } from "@mui/material";
+
+import MuiAlert, { AlertProps } from '@mui/material/Alert';
+
+const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
+  props,
+  ref,
+) {
+  return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+});
+
 
 export default function FoodDatePage () {
   const currentHour = new Date().getHours() + 1;
@@ -28,6 +38,26 @@ export default function FoodDatePage () {
   const [countdown, setCountdown] = useState<number>(countdownValue);
   const [hasSubmit, setHasSubmit] = useState<boolean>(false);
   const [dots, setDots] = useState(0);
+  const [hasError, setHasError] = useState<boolean>(false);
+  const [emptyFields, setEmptyFields] = useState<string[]>([]);
+  
+  const handleSubmit = () => {
+    const tmpEmptyFields: string[] = [];
+    if (pplCount === "") tmpEmptyFields.push("人數");
+    if (selectedTime === "") tmpEmptyFields.push("時間");
+    if (selectedPriceRange === "") tmpEmptyFields.push("價格範圍");
+    if (selectedTypes.length === 0) tmpEmptyFields.push("餐廳類型");
+
+    setEmptyFields(tmpEmptyFields);
+    setHasError(tmpEmptyFields.length > 0);
+    if (tmpEmptyFields.length === 0) {
+      setSubmitting(true);
+    }
+  };
+
+  const handleCloseError = () => {
+    setHasError(false);
+  }
 
   const handleUndoSubmit = () => {
     setSubmitting(false);
@@ -168,7 +198,7 @@ export default function FoodDatePage () {
                 variant="contained" 
                 color="primary" 
                 className="bg-blue-500" 
-                onClick={() => setSubmitting(true)}
+                onClick={handleSubmit}
                 disabled={submitting}
               >
                 開始配對
@@ -176,11 +206,20 @@ export default function FoodDatePage () {
               
             </FormControl>
           </div>
-
+          <Snackbar 
+            open={hasError} 
+            autoHideDuration={6000} 
+            onClose={handleCloseError}
+            anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+          >
+            <Alert onClose={handleCloseError} severity="error" sx={{ width: '100%' }}>
+              {"請填寫以下欄位：" + emptyFields.join("、")}
+            </Alert>
+          </Snackbar>
           {submitting && 
           <div className="mt-2 flex flex-col items-center">
             <Typography variant="h6" className="text-center mt-2 mb-3">
-              你選擇的結果如下，你還有{countdown}秒鐘可以反悔，{countdown}秒鐘後會開始配對......
+              你選擇的結果如下，你還有 {countdown} 秒鐘可以反悔， {countdown} 秒鐘後會開始配對......
             </Typography>
             <div className="w-1/2 flex flex-col">
               <Typography variant="body1" className="text mt-2 mb-3">
