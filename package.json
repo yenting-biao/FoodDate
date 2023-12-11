@@ -6,7 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "format": "prettier --write .",
+    "migrate": "drizzle-kit push:pg",
+    "studio": "drizzle-kit studio",
+    "generate": "drizzle-kit generate:pg"
   },
   "dependencies": {
     "@vis.gl/react-google-maps": "^0.4.0",
