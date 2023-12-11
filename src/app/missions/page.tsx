@@ -1,8 +1,8 @@
-export default function Home () {
+export default function MissionPage () {
   return (
     <div className="">
       <h1>不揪 Food Date</h1>
-      <p>A food date app.</p>
+      <p>Mission</p>
     </div>
   );
 }
