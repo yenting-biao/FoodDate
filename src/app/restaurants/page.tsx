@@ -107,7 +107,7 @@ export default function RestaurantPage() {
 
   return (
     <>
-      <main className="flex min-h-screen items-center justify-center w-full">      
+      <main className="flex h-full items-center justify-center w-full">      
         <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!}>
             <div className="flex flex-col h-screen w-1/3 p-1 gap-3">
               <div className="flex w-full p-2">

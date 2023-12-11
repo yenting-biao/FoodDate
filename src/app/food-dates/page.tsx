@@ -85,7 +85,6 @@ export default function FoodDatePage () {
     return () => clearInterval(timer);
   }, []);
   
-  // TODO: Note that we have not checked if all the fields are filled or not. This needs to be implemented later.
   return (
     <main className="flex flex-col items-center w-full h-full mb-14">
       {hasSubmit ? 
