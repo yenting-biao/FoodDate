@@ -32,7 +32,7 @@ Table REVIEWS {
   placeId varchar(300) [not null]
   reviewerId uuid
   stars int [not null]
-  content varchar(2000)
+  content text
   expense int
   createdAt timestamp [not null, default: `now()`]
 }
@@ -76,7 +76,7 @@ TABLE PRIVATE_MESSAGES {
   dateId uuid [not null]
   senderId uuid
   sentAt timestamp [default: `now()`]
-  content varchar(1000) [not null]
+  content text [not null]
 }
 Ref: PRIVATE_MESSAGES.dateId > DATES.dateId [delete: cascade, update: cascade]
 Ref: PRIVATE_MESSAGES.senderId > USERS.userId [delete: set null, update: cascade]
