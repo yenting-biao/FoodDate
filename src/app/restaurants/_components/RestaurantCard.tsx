@@ -1,5 +1,5 @@
 "use client"
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { styled } from '@mui/material/styles';
 import {
   Card,
@@ -73,7 +73,6 @@ export default function RestaurantCard({ name, address, types, rating, userRatin
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState<number>(0);
 
   const handleBeforePhoto = () => {
-    console.log("currentPhotoIndex: " + currentPhotoIndex);
     setCurrentPhotoIndex(currentPhotoIndex == 0 ? currentPhotoIndex : currentPhotoIndex - 1);    
   };
 
@@ -81,7 +80,13 @@ export default function RestaurantCard({ name, address, types, rating, userRatin
     setCurrentPhotoIndex(currentPhotoIndex === photoReference.length - 1 ? currentPhotoIndex : currentPhotoIndex + 1);
   };
 
-  const [showArrow, setShowArrow] = useState<boolean>(false);
+  const [showLeftArrow, setShowLeftArrow] = useState<boolean>(false);
+  const [showRightArrow, setShowRightArrow] = useState<boolean>(false);  
+
+  useEffect(() => {
+    setShowLeftArrow(currentPhotoIndex !== 0);
+    setShowRightArrow(currentPhotoIndex !== photoReference.length - 1);
+  }, [currentPhotoIndex, photoReference.length]);
 
   return (
     <Paper elevation={5}>
@@ -90,7 +95,7 @@ export default function RestaurantCard({ name, address, types, rating, userRatin
           title={name}
           subheader={ // TODO: 這東西的對齊有問題啊
             <Box display="flex" flexDirection="row" alignItems="center" gap={1}>
-              <div>
+              <div className="mt-px">
                 {rating}
               </div>            
               <Rating 
@@ -108,11 +113,13 @@ export default function RestaurantCard({ name, address, types, rating, userRatin
           className="relative" 
           onMouseEnter={() => {
             // Show the next arrow when the mouse enters the photo
-            setShowArrow(true);
+            setShowLeftArrow(currentPhotoIndex !== 0);
+            setShowRightArrow(currentPhotoIndex !== photoReference.length - 1);
           }}
           onMouseLeave={() => {
             // Hide the next arrow when the mouse leaves the photo
-            setShowArrow(false);
+            setShowLeftArrow(false);
+            setShowRightArrow(false);
           }}
         >
           <CardMedia
@@ -124,14 +131,14 @@ export default function RestaurantCard({ name, address, types, rating, userRatin
             alt="Restaurant Photo"
             
           />
-          {showArrow && <IconButton
-            className="absolute left-0 top-1/2 z-10"
+          {showLeftArrow && <IconButton
+            className="absolute left-0 top-0 bottom-0 my-auto mx-0 z-10"
             onClick={handleBeforePhoto}
           >
             <NavigateBeforeIcon className="text-white"/>
           </IconButton>}
-          {showArrow && <IconButton
-            className="absolute right-0 top-1/2 z-10"
+          {showRightArrow && <IconButton
+            className="absolute right-0 top-0 bottom-0 my-auto mx-0 z-10"
             onClick={handleNextPhoto}
           >
             <NavigateNextIcon className="text-white"/>
