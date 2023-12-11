@@ -1,5 +1,5 @@
 Table USERS {
-  id uuid [primary key, default: `gen_random_uuid()`]
+  userId uuid [primary key, default: `gen_random_uuid()`]
   ntuEmail varchar(63) [not null, unique]
   username varchar(80) [not null]
   hashedPassword varchar(255) [not null]
@@ -21,15 +21,15 @@ Table RESTAURANT_TYPES {
 Ref: RESTAURANT_TYPES.placeId > RESTAURANTS.placeId [delete: cascade, update: cascade]
 
 Table REVIEWS {
-  placeId varchar(300) [primary key]
-  reviewerId uuid [primary key]
+  placeId varchar(300) [not null]
+  reviewerId uuid
   stars int [not null]
   content varchar(2000)
-  expenditure int
+  expense int
   createdAt timestamp [not null, default: `now()`]
 }
 Ref: REVIEWS.placeId > RESTAURANTS.placeId [delete: cascade, update: cascade]
-Ref: REVIEWS.reviewerId > USERS.id [delete: set null, update: cascade]
+Ref: REVIEWS.reviewerId > USERS.userId [delete: set null, update: cascade]
 
 Table TAGS {
   tagId uuid [primary key, default: `gen_random_uuid()`]
@@ -41,7 +41,7 @@ Table TAG_OWNERS {
   ownerId uuid [primary key]
 }
 Ref: TAG_OWNERS.tagId > TAGS.tagId [delete: cascade, update: cascade]
-Ref: TAG_OWNERS.ownerId > USERS.id [delete: cascade, update: cascade]
+Ref: TAG_OWNERS.ownerId > USERS.userId [delete: cascade, update: cascade]
 
 Table TAGGED_RESTAURANTS {
   tagId uuid [primary key]
@@ -56,24 +56,19 @@ Table DATES {
 }
 
 Table DATE_PARTICIPANTS {
-  dateId uuid [primary key]
-  participantId uuid [primary key]
+  entryId: 
+  dateId uuid
+  participantId uuid
 }
 Ref: DATE_PARTICIPANTS.dateId > DATES.dateId [delete: cascade, update: cascade]
-Ref: DATE_PARTICIPANTS.participantId > USERS.id [delete: set null, update: cascade]
-
-Table GLOBAL_MESSAGES {
-  senderId uuid [primary key]
-  sentAt timestamp [primary key, default: `now()`]
-  content varchar(1000) [not null]
-}
-Ref: GLOBAL_MESSAGES.senderId > USERS.id [delete: set null, update: cascade]
+Ref: DATE_PARTICIPANTS.participantId > USERS.userId [delete: set null, update: cascade]
 
 TABLE PRIVATE_MESSAGES {
-  dateId uuid [primary key]
-  senderId uuid [primary key]
-  sentAt timestamp [primary key, default: `now()`]
+  messageId uuid [primary key, default: `gen_random_uuid()`]
+  dateId uuid [not null]
+  senderId uuid
+  sentAt timestamp [default: `now()`]
   content varchar(1000) [not null]
 }
 Ref: PRIVATE_MESSAGES.dateId > DATES.dateId [delete: cascade, update: cascade]
-Ref: PRIVATE_MESSAGES.senderId > USERS.id [delete: set null, update: cascade]
+Ref: PRIVATE_MESSAGES.senderId > USERS.userId [delete: set null, update: cascade]

@@ -80,13 +80,13 @@ export const restaurantTypesRelations = relations(
 export const reviewsTable = pgTable(
   "reviews",
   {
-    placeId: varchar("placeId", { length: 300 }).references(
-      () => restaurantsTable.placeId,
-      {
+    reviewId: uuid("reviewId").primaryKey().defaultRandom(),
+    placeId: varchar("placeId", { length: 300 })
+      .notNull()
+      .references(() => restaurantsTable.placeId, {
         onDelete: "cascade",
         onUpdate: "cascade",
-      }
-    ),
+      }),
     reviewerId: uuid("reviewerId").references(() => usersTable.userId, {
       onDelete: "set null",
       onUpdate: "cascade",
@@ -99,7 +99,6 @@ export const reviewsTable = pgTable(
       .notNull(),
   },
   (table) => ({
-    pk: primaryKey({ columns: [table.placeId, table.reviewerId] }),
     placeIdAndCreatedAtIndex: index("placeIdAndCreatedAtIndex").on(
       table.placeId,
       table.createdAt
@@ -220,6 +219,7 @@ export const datesRelations = relations(datesTable, ({ many }) => ({
 export const dateParticipantsTable = pgTable(
   "dateParticipants",
   {
+    entryId: uuid("entryId").primaryKey().defaultRandom(),
     dateId: uuid("dateId").references(() => datesTable.dateId, {
       onDelete: "cascade",
       onUpdate: "cascade",
@@ -230,7 +230,6 @@ export const dateParticipantsTable = pgTable(
     }),
   },
   (table) => ({
-    pk: primaryKey({ columns: [table.dateId, table.participantId] }),
     dateIdIndex: index("dateIdIndex").on(table.dateId),
   })
 );
@@ -259,12 +258,10 @@ export const privateMessagesTable = pgTable(
         onDelete: "cascade",
         onUpdate: "cascade",
       }),
-    senderId: uuid("senderId")
-      .notNull()
-      .references(() => usersTable.userId, {
-        onDelete: "set null",
-        onUpdate: "cascade",
-      }),
+    senderId: uuid("senderId").references(() => usersTable.userId, {
+      onDelete: "set null",
+      onUpdate: "cascade",
+    }),
     sentAt: timestamp("sentAt").default(sql`now()`),
     content: varchar("content", { length: 1000 }).notNull(),
   },
