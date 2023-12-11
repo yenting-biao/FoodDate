@@ -4,7 +4,7 @@ import AuthForm from "../_components/AuthForm";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Avatar, Badge, IconButton, ListItemIcon, ListItemText, Tooltip, Typography, Menu, MenuItem } from "@mui/material";
+import { Avatar, Badge, IconButton, ListItemIcon, ListItemText, Tooltip, Typography, Menu, MenuItem, Button, ButtonBase } from "@mui/material";
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import MenuIcon from '@mui/icons-material/Menu';
 import AppsRoundedIcon from '@mui/icons-material/AppsRounded';
@@ -39,10 +39,14 @@ export default function Header() {
   return (
     <>
       <header className="fixed top-0 w-full h-16 z-50 flex items-center gap-1 bg-slate-200 text-black py-3 px-2">
-             
-        <Typography variant="h5" className="ml-2">
-          Food Date 不揪?
-        </Typography>
+        <ButtonBase 
+          className="p-2 rounded-full"
+          onClick={() => router.push("/")}
+        >
+          <Typography variant="h5" className="ml-2">
+            Food Date 不揪？
+          </Typography>
+        </ButtonBase>        
         <div className="flex-grow">
           {/* any other things */}
         </div>

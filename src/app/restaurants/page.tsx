@@ -7,8 +7,9 @@ import {
 } from "@vis.gl/react-google-maps";
 import { useState, useEffect } from "react";
 
-
-import Header from "../_components/Header";
+import RestaurantCard from "./_components/RestaurantCard";
+import { Button, Divider, Stack } from "@mui/material";
+import SearchBar from "./_components/SearchBar";
 
 
 export default function RestaurantPage() {
@@ -35,14 +36,13 @@ export default function RestaurantPage() {
         }
       );
     }
-  }, []);//don't remove the empty dependency array!!!
+  }, []); // Don't remove the empty dependency array!!!
 
   // tmporary
   const [types, setTypes] = useState<string[]>([]);
   
   const blueMarkerIcon = {
-    url: 'http://maps.google.com/mapfiles/ms/icons/green-dot.png', // URL to a blue marker icon
-
+    url: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png', // URL to a blue marker icon
   };
 
   const handleMapClick = async (event: any) => {
@@ -107,34 +107,52 @@ export default function RestaurantPage() {
 
   return (
     <>
-      <main className="flex min-h-screen items-center justify-center w-full">
-      
+      <main className="flex min-h-screen items-center justify-center w-full">      
         <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!}>
-          <div className="h-screen w-1/4 bg-white text-black p-3">
-            {/*<div>
-              餐廳資訊
-              {position.lat + " - " + position.lng}
-  </div>*/}
-            test
-            <div className="text-xl font-medium">{restaurantName}</div>
-            <div className="text-sm">{restaurantAddress}</div>
-            <div>
-              {types.map((type, index) => {
-                return <div key={index}>{type}</div>;
-              })}
+            <div className="flex flex-col h-screen w-1/3 p-1 gap-3">
+              <div className="flex w-full p-2">
+                <SearchBar />              
+              </div>
+              {restaurantName != "" && <RestaurantCard 
+                name={restaurantName}
+                address={restaurantAddress}
+                types={types}
+                rating={4.6}
+                userRatingsTotal={100}
+                priceLevel={"$$"}
+                photoReference={["/food1.jpeg"]}
+              />}
+              <Divider />
+              <div className="h-screen overflow-y-scroll p-3">
+                <Stack spacing={2}>
+                              
+                  {Array.from({ length: 10}).map((_, index) => (
+                    <RestaurantCard 
+                      key={index}
+                      name="壽司漢堡123"
+                      address="台北市大安區忠孝東路四段 123 號"
+                      types={["type1", "type2"]}
+                      rating={4.6}
+                      userRatingsTotal={100}
+                      priceLevel={"$$"}
+                      photoReference={["/food1.jpeg", "/food2.jpeg", "/food3.jpeg"]}
+                    />
+                  ))}
+                </Stack>
+              </div>            
+              
             </div>
-          </div>
-          <div className="h-screen w-3/4">
-            <Map
-              center={position}
-              zoom={15}
-              onClick={handleMapClick}
-              mapId={process.env.NEXT_PUBLIC_MAP_ID}
-            >
-              <Marker position={position}/>
-              <Marker position={userPosition} icon={blueMarkerIcon}/>
-            </Map>
-          </div>
+            <div className="h-screen w-2/3">
+              <Map
+                center={position}
+                zoom={15}
+                onClick={handleMapClick}
+                mapId={process.env.NEXT_PUBLIC_MAP_ID}
+              >
+                <Marker position={position}/>
+                <Marker position={userPosition} icon={blueMarkerIcon}/>
+              </Map>
+            </div>
         </APIProvider>
       </main>
     </>
