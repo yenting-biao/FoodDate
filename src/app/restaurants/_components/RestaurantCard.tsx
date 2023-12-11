@@ -27,6 +27,7 @@ import LocationOnIcon from '@mui/icons-material/LocationOn';
 import RestaurantIcon from '@mui/icons-material/Restaurant';
 import PaidIcon from '@mui/icons-material/Paid';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
+import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
 import ReviewCard from './ReviewCard';
 
 const Item = styled(Paper)(({ theme }) => ({
@@ -71,11 +72,16 @@ export default function RestaurantCard({ name, address, types, rating, userRatin
 
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState<number>(0);
 
-  const handleNextPhoto = () => {
-    setCurrentPhotoIndex((currentPhotoIndex + 1) % photoReference.length);
+  const handleBeforePhoto = () => {
+    console.log("currentPhotoIndex: " + currentPhotoIndex);
+    setCurrentPhotoIndex(currentPhotoIndex == 0 ? currentPhotoIndex : currentPhotoIndex - 1);    
   };
 
-  const[showNextArrow, setShowNextArrow] = useState<boolean>(false);
+  const handleNextPhoto = () => {
+    setCurrentPhotoIndex(currentPhotoIndex === photoReference.length - 1 ? currentPhotoIndex : currentPhotoIndex + 1);
+  };
+
+  const [showArrow, setShowArrow] = useState<boolean>(false);
 
   return (
     <Paper elevation={5}>
@@ -102,11 +108,11 @@ export default function RestaurantCard({ name, address, types, rating, userRatin
           className="relative" 
           onMouseEnter={() => {
             // Show the next arrow when the mouse enters the photo
-            setShowNextArrow(true);
+            setShowArrow(true);
           }}
           onMouseLeave={() => {
             // Hide the next arrow when the mouse leaves the photo
-            setShowNextArrow(false);
+            setShowArrow(false);
           }}
         >
           <CardMedia
@@ -118,12 +124,17 @@ export default function RestaurantCard({ name, address, types, rating, userRatin
             alt="Restaurant Photo"
             
           />
-          {showNextArrow && <IconButton
-            id="nextArrow"
+          {showArrow && <IconButton
+            className="absolute left-0 top-1/2 z-10"
+            onClick={handleBeforePhoto}
+          >
+            <NavigateBeforeIcon className="text-white"/>
+          </IconButton>}
+          {showArrow && <IconButton
             className="absolute right-0 top-1/2 z-10"
             onClick={handleNextPhoto}
           >
-            <NavigateNextIcon />
+            <NavigateNextIcon className="text-white"/>
           </IconButton>}
         </div>        
         <CardContent>
@@ -167,7 +178,12 @@ export default function RestaurantCard({ name, address, types, rating, userRatin
         <Collapse in={expanded} timeout="auto" unmountOnExit>
           <Divider />
           <CardContent>
-            <Typography variant="subtitle1">評價：</Typography>
+            <Typography 
+              variant="subtitle1" 
+              className="font-semibold pb-4 text-center"
+            >
+              評價
+            </Typography>
             <Stack gap={2}>
               {Array.from({length: 5}).map((_, i) => (
                 <ReviewCard  

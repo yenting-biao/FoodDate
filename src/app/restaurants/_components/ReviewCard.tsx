@@ -28,7 +28,7 @@ export default function ReviewCard({ username, reviewDate, starsCount, content }
 
   return (
     <Paper elevation={1}>
-      <Card>
+      <Card className="border border-slate-500 rounded-xl">
         <CardHeader
           avatar={
             <Avatar sx={{ bgcolor: red[500] }} aria-label="recipe">
@@ -49,7 +49,7 @@ export default function ReviewCard({ username, reviewDate, starsCount, content }
           image="/taiwan.jpeg"
           alt="taiwan"
         />}
-        <CardContent>
+        <CardContent className="pt-0">
           <Box display="flex" flexDirection="row" alignItems="center" gap={1}>
             <div>
               {starsCount}

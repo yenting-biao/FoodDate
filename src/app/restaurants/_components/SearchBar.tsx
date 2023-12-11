@@ -43,7 +43,7 @@ export default function SearchBar() {
       <StyledInputBase
         placeholder="Search for restaurant..."
         inputProps={{ 'aria-label': 'search' }}
-        className="border-2 rounded-full"
+        className="border-2 rounded-full w-full"
       />
     </Search>
   );
