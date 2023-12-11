@@ -8,6 +8,7 @@ import {
   doublePrecision,
   integer,
   primaryKey,
+  text,
 } from "drizzle-orm/pg-core";
 
 export const usersTable = pgTable(
@@ -119,7 +120,7 @@ export const reviewsTable = pgTable(
       onUpdate: "cascade",
     }),
     stars: integer("stars").notNull(),
-    content: varchar("content", { length: 2000 }),
+    content: text("content"),
     expense: integer("expense"),
     createdAt: timestamp("createdAt")
       .default(sql`now()`)
@@ -292,7 +293,7 @@ export const privateMessagesTable = pgTable(
       onUpdate: "cascade",
     }),
     sentAt: timestamp("sentAt").default(sql`now()`),
-    content: varchar("content", { length: 1000 }).notNull(),
+    content: text("content").notNull(),
   },
   (table) => ({
     dateIdAndSentAtIndex: index("dateIdAndSentAtIndex").on(
