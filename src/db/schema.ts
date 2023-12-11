@@ -46,10 +46,37 @@ export const restaurantsTable = pgTable(
 );
 
 export const restaurantsRelations = relations(restaurantsTable, ({ many }) => ({
+  openingHoursTable: many(openingHoursTable),
   restaurantTypesTable: many(restaurantTypesTable),
   reviewsTable: many(reviewsTable),
   taggedRestaurantsTable: many(taggedRestaurantsTable),
 }));
+
+export const openingHoursTable = pgTable(
+  "openingHours",
+  {
+    displayId: uuid("displayId").primaryKey().defaultRandom(),
+    placeId: varchar("placeId", { length: 300 }).references(
+      () => restaurantsTable.placeId,
+      {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      }
+    ),
+    day: varchar("day", { length: 50 }).notNull(),
+    hours: varchar("hours", { length: 50 }).notNull(),
+  },
+  (table) => ({
+    placeIdIndex: index("placeIdIndex").on(table.placeId),
+  })
+);
+
+export const openingHoursRelations = relations(
+  openingHoursTable,
+  ({ one }) => ({
+    restaurantsTable: one(restaurantsTable),
+  })
+);
 
 export const restaurantTypesTable = pgTable(
   "restaurantTypes",

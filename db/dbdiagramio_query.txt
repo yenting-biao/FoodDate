@@ -14,6 +14,14 @@ Table RESTAURANTS {
   longitude double [not null]
 }
 
+Table OPENING_HOURS {
+  displayId uuid [primary key, default: `gen_random_uuid()`]
+  placeId varchar(300)
+  day varchar(50) [not null]
+  hours varchar(50) [not null]
+}
+Ref: OPENING_HOURS.placeId > RESTAURANTS.placeId [delete: cascade, update: cascade]
+
 Table RESTAURANT_TYPES {
   placeId varchar(300) [primary key]
   type varchar(20) [primary key]
@@ -56,8 +64,8 @@ Table DATES {
 }
 
 Table DATE_PARTICIPANTS {
-  entryId: 
-  dateId uuid
+  displayId uuid [primary key, default: `gen_random_uuid()`]
+  dateId uuid [not null]
   participantId uuid
 }
 Ref: DATE_PARTICIPANTS.dateId > DATES.dateId [delete: cascade, update: cascade]
