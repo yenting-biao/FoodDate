@@ -219,11 +219,13 @@ export const datesRelations = relations(datesTable, ({ many }) => ({
 export const dateParticipantsTable = pgTable(
   "dateParticipants",
   {
-    entryId: uuid("entryId").primaryKey().defaultRandom(),
-    dateId: uuid("dateId").references(() => datesTable.dateId, {
-      onDelete: "cascade",
-      onUpdate: "cascade",
-    }),
+    displayId: uuid("displayId").primaryKey().defaultRandom(),
+    dateId: uuid("dateId")
+      .notNull()
+      .references(() => datesTable.dateId, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      }),
     participantId: uuid("participantId").references(() => usersTable.userId, {
       onDelete: "set null",
       onUpdate: "cascade",
