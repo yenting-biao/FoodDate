@@ -16,7 +16,7 @@ const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
 export default function FoodDatePage () {
   const currentHour = new Date().getHours() + 1;
   const restaurantTypes = ["台灣料理", "速食", "韓國料理", "義大利麵", "泰國菜", "素食"]; // temporary variables
-  const priceRanges = ["$ （1～200元）", "$$ （200 ~ 400元）", "$$$ （400～600元）", "$$$$ （600元以上）"];
+  const priceRanges = ["$ （200元以內）", "$$ （400元以內）", "$$$ （600元以內）", "$$$$ （600元以上）"];
 
   const [pplCount, setPplCount] = useState<string>("");
   const [selectedTime, setSelectedTime] = useState<string>("");
@@ -33,7 +33,7 @@ export default function FoodDatePage () {
     console.log("selectedTypes", selectedTypes);
   };
 
-  const countdownValue = 8;
+  const countdownValue = 3;
   const [submitting, setSubmitting] = useState<boolean>(false);  
   const [countdown, setCountdown] = useState<number>(countdownValue);
   const [hasSubmit, setHasSubmit] = useState<boolean>(false);
@@ -85,7 +85,6 @@ export default function FoodDatePage () {
     return () => clearInterval(timer);
   }, []);
   
-  // TODO: Note that we have not checked if all the fields are filled or not. This needs to be implemented later.
   return (
     <main className="flex flex-col items-center w-full h-full mb-14">
       {hasSubmit ? 

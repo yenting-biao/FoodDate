@@ -3,7 +3,6 @@ import {
   CardHeader,
   CardMedia,
   CardContent,
-  CardActions,
   Avatar,
   IconButton,
   Typography,
@@ -12,8 +11,6 @@ import {
   Box,
 } from "@mui/material";
 import { red } from '@mui/material/colors';
-import FavoriteIcon from '@mui/icons-material/Favorite';
-import ShareIcon from '@mui/icons-material/Share';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 
 type Props = {

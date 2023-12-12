@@ -19,7 +19,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <Header /> 
-        <div className="mt-16">
+        <div className="mt-16 overflow-hidden">
           {children}
         </div>
       </body>

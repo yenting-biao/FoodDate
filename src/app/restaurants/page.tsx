@@ -6,11 +6,28 @@ import {
   useMapsLibrary,
 } from "@vis.gl/react-google-maps";
 import { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
 
-import RestaurantCard from "./_components/RestaurantCard";
-import { Button, Divider, Stack } from "@mui/material";
+import { 
+  Divider, 
+  Stack,
+  SpeedDial,
+  SpeedDialAction, 
+  Typography,
+  Modal,
+  Box,
+  Button
+} from "@mui/material";
+import SpeedDialIcon from '@mui/material/SpeedDialIcon';
+import SwapHorizontalCircleIcon from '@mui/icons-material/SwapHorizontalCircle';
+
 import SearchBar from "./_components/SearchBar";
+import RestaurantCard from "./_components/RestaurantCard";
 
+const Wheel = dynamic(
+  () => import('react-custom-roulette').then(mod => mod.Wheel),
+  { ssr: false }
+)
 
 export default function RestaurantPage() {
   const [position, setPosition] = useState({
@@ -22,10 +39,10 @@ export default function RestaurantPage() {
     lng: 121.53977457666448,
   });
   const [restaurantName, setRestaurantName] = useState<string>("");
-  const [restaurantAddress, setRestaurantAddress] = useState<string>("");
-  
+  const [restaurantAddress, setRestaurantAddress] = useState<string>("");  
+  const [types, setTypes] = useState<string[]>([]);
 
-  useEffect(() => {
+  useEffect(() => { // TODO: Detect user position every 10 seconds.
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -38,8 +55,35 @@ export default function RestaurantPage() {
     }
   }, []); // Don't remove the empty dependency array!!!
 
-  // tmporary
-  const [types, setTypes] = useState<string[]>([]);
+  const [showRoulette, setShowRoulette] = useState<boolean>(false);
+  const actions = [
+    { icon: <SwapHorizontalCircleIcon />, name: "幫我抽要吃什麼", onClick: () => setShowRoulette(true) },
+  ];
+
+  const style = {
+    position: 'absolute' as 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: "60%",
+    height: "75%",
+    bgcolor: 'background.paper',
+    border: '2px solid #000',
+    boxShadow: 24,
+    p: 4,
+  };
+  
+  const[mustSpin, setMustSpin] = useState<boolean>(false);
+
+  const wheelData = [
+    { option: '0', style: { backgroundColor: 'green', textColor: 'black' } },
+    { option: '1', style: { backgroundColor: 'white' } },
+    { option: '2' },
+  ]
+
+  useEffect(() => {
+      setMustSpin(true)
+  }, [])
   
   const blueMarkerIcon = {
     url: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png', // URL to a blue marker icon
@@ -51,7 +95,7 @@ export default function RestaurantPage() {
     console.log("placeId", placeId);
     if (!placeId) return;
 
-    try {
+    try { // The API to get place details
       const res = await fetch(
         `https://places.googleapis.com/v1/places/${placeId}?fields=id,displayName,formattedAddress,types&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`
       );
@@ -107,25 +151,24 @@ export default function RestaurantPage() {
 
   return (
     <>
-      <main className="flex min-h-screen items-center justify-center w-full">      
+      <main className="flex h-full items-center justify-center w-full">      
         <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!}>
             <div className="flex flex-col h-screen w-1/3 p-1 gap-3">
               <div className="flex w-full p-2">
                 <SearchBar />              
-              </div>
-              {restaurantName != "" && <RestaurantCard 
-                name={restaurantName}
-                address={restaurantAddress}
-                types={types}
-                rating={4.6}
-                userRatingsTotal={100}
-                priceLevel={"$$"}
-                photoReference={["/food1.jpeg"]}
-              />}
+              </div>              
               <Divider />
               <div className="h-screen overflow-y-scroll p-3">
                 <Stack spacing={2}>
-                              
+                  {restaurantName != "" && <RestaurantCard 
+                    name={restaurantName}
+                    address={restaurantAddress}
+                    types={types}
+                    rating={4.6}
+                    userRatingsTotal={100}
+                    priceLevel={"$$"}
+                    photoReference={["/food1.jpeg"]}
+                  />}            
                   {Array.from({ length: 10}).map((_, index) => (
                     <RestaurantCard 
                       key={index}
@@ -152,51 +195,58 @@ export default function RestaurantPage() {
                 <Marker position={position}/>
                 <Marker position={userPosition} icon={blueMarkerIcon}/>
               </Map>
+
+              <SpeedDial
+                ariaLabel="SpeedDial basic example"
+                sx={{ position: 'absolute', bottom: 16, right: 16  }}
+                className=""
+                icon={<SpeedDialIcon className=""/> /* TODO: fix color */}
+              >
+                {actions.map((action) => ( 
+                  <SpeedDialAction
+                    key={action.name}
+                    icon={action.icon}
+                    tooltipTitle={action.name}
+                    onClick={action.onClick}
+                  />
+                ))}
+              </SpeedDial>
+              <Modal
+                open={showRoulette}
+                onClose={() => setShowRoulette(false)} 
+                aria-labelledby="modal-modal-title"
+                aria-describedby="modal-modal-description"
+              >                
+                <Box sx={style}>
+                   <Typography 
+                    id="modal-modal-title" 
+                    variant="h4"
+                    className="text-center"
+                  >
+                    讓我幫你抽要吃什麼吧
+                  </Typography>
+                  <Typography 
+                    id="modal-modal-description" 
+                    className="mt-2 text-center"
+                  >
+                    每次抽籤花費 20 金幣
+                  </Typography>
+                  <Wheel
+                    mustStartSpinning={false}
+                    prizeNumber={3}
+                    data={wheelData}
+                    backgroundColors={['#3e3e3e', '#df3428']}
+                    textColors={['#ffffff']}
+                    onStopSpinning={() => {
+                      setMustSpin(false);
+                    }}
+                  />
+                  <Button onClick={() => setMustSpin(true)}>Spin</Button>                  
+                </Box>                 
+              </Modal>
             </div>
         </APIProvider>
       </main>
     </>
   );
-}
-
-type GeocodingProps = {
-  placeId: string;
-};
-
-function Place() {
-  // triggers loading the places library and returns the API Object once complete (the
-  // component calling the hook gets automatically re-rendered when this is
-  // the case)
-  const placesLibrary = useMapsLibrary("places");
-
-  const [placesService, setPlacesService] = useState(null);
-
-  useEffect(() => {
-    if (!placesLibrary) return;
-
-    // when placesLibrary is loaded, the library can be accessed via the
-    // placesLibrary API object
-    setPlacesService(new placesLibrary.PlacesService());
-  }, [placesLibrary]);
-
-  useEffect(() => {
-    if (!placesService) return;
-
-    // ...use placesService...
-  }, [placesService]);
-
-  return <></>;
-}
-
-function Geocoding({ placeId }: GeocodingProps) {
-  const geocodingLibrary = useMapsLibrary("geocoding");
-  useEffect(() => {
-    if (!geocodingLibrary) return;
-
-    const geocoder = new geocodingLibrary.Geocoder();
-    console.log("geocoder", geocoder);
-    // ...
-  }, [geocodingLibrary, placeId]);
-
-  return <></>;
 }
