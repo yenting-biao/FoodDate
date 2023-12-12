@@ -19,6 +19,7 @@
     "@mui/icons-material": "^5.14.19",
     "@mui/material": "^5.14.20",
     "@types/react-linkify": "^1.0.4",
+    "@typescript-eslint/parser": "^6.0.0",
     "@vis.gl/react-google-maps": "^0.4.0",
     "axios": "^1.6.2",
     "drizzle-orm": "^0.29.1",
