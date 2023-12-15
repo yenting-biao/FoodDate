@@ -14,11 +14,11 @@ import {
 export const usersTable = pgTable(
   "users",
   {
-    userId: uuid("userId").defaultRandom().notNull().unique(),
-    ntuEmail: varchar("ntuEmail", { length: 63 }).notNull().unique(),
+    userId: uuid("userid").defaultRandom().notNull().unique(),
+    ntuEmail: varchar("ntuemail", { length: 63 }).notNull().unique(),
     username: varchar("username", { length: 80 }).notNull(),
-    hashedPassword: varchar("hashedPassword", { length: 255 }).notNull(),
-    avatarUrl: varchar("avatarUrl"),
+    hashedPassword: varchar("hashedpassword", { length: 255 }).notNull(),
+    avatarUrl: varchar("avatarurl"),
   },
   (table) => ({
     userIdIndex: index("userIdIndex").on(table.userId),
@@ -35,9 +35,9 @@ export const usersRelations = relations(usersTable, ({ many }) => ({
 export const restaurantsTable = pgTable(
   "restaurants",
   {
-    placeId: varchar("placeId", { length: 300 }).primaryKey(),
-    name: varchar("name", { length: 200 }).notNull(),
-    address: varchar("address", { length: 100 }).notNull(),
+    placeId: varchar("placeid", { length: 300 }).primaryKey(),
+    name: text("name").notNull(),
+    address: text("address").notNull(),
     latitude: doublePrecision("latitude").notNull(),
     longitude: doublePrecision("longitude").notNull(),
   },
@@ -54,18 +54,18 @@ export const restaurantsRelations = relations(restaurantsTable, ({ many }) => ({
 }));
 
 export const openingHoursTable = pgTable(
-  "openingHours",
+  "openinghours",
   {
-    displayId: uuid("displayId").primaryKey().defaultRandom(),
-    placeId: varchar("placeId", { length: 300 }).references(
+    displayId: uuid("displayid").primaryKey().defaultRandom(),
+    placeId: varchar("placeid", { length: 300 }).references(
       () => restaurantsTable.placeId,
       {
         onDelete: "cascade",
         onUpdate: "cascade",
       }
     ),
-    day: varchar("day", { length: 50 }).notNull(),
-    hours: varchar("hours", { length: 50 }).notNull(),
+    day: varchar("day", { length: 100 }).notNull(),
+    hours: varchar("hours", { length: 100 }).notNull(),
   },
   (table) => ({
     placeIdIndex: index("placeIdIndex").on(table.placeId),
@@ -80,16 +80,16 @@ export const openingHoursRelations = relations(
 );
 
 export const restaurantTypesTable = pgTable(
-  "restaurantTypes",
+  "restauranttypes",
   {
-    placeId: varchar("placeId", { length: 300 }).references(
+    placeId: varchar("placeid", { length: 300 }).references(
       () => restaurantsTable.placeId,
       {
         onDelete: "cascade",
         onUpdate: "cascade",
       }
     ),
-    type: varchar("type", { length: 20 }),
+    type: varchar("type", { length: 100 }),
   },
   (table) => ({
     pk: primaryKey({ columns: [table.placeId, table.type] }),
@@ -108,21 +108,21 @@ export const restaurantTypesRelations = relations(
 export const reviewsTable = pgTable(
   "reviews",
   {
-    reviewId: uuid("reviewId").primaryKey().defaultRandom(),
-    placeId: varchar("placeId", { length: 300 })
+    reviewId: uuid("reviewid").primaryKey().defaultRandom(),
+    placeId: varchar("placeid", { length: 300 })
       .notNull()
       .references(() => restaurantsTable.placeId, {
         onDelete: "cascade",
         onUpdate: "cascade",
       }),
-    reviewerId: uuid("reviewerId").references(() => usersTable.userId, {
+    reviewerId: uuid("reviewerid").references(() => usersTable.userId, {
       onDelete: "set null",
       onUpdate: "cascade",
     }),
     stars: integer("stars").notNull(),
     content: text("content"),
     expense: integer("expense"),
-    createdAt: timestamp("createdAt")
+    createdAt: timestamp("createdat")
       .default(sql`now()`)
       .notNull(),
   },
@@ -148,8 +148,8 @@ export const reviewsRelations = relations(reviewsTable, ({ one }) => ({
 export const tagsTable = pgTable(
   "tags",
   {
-    tagId: uuid("tagId").primaryKey().defaultRandom(),
-    tagName: varchar("tagName", { length: 50 }).notNull(),
+    tagId: uuid("tagid").primaryKey().defaultRandom(),
+    tagName: varchar("tagname", { length: 50 }).notNull(),
   },
   (table) => ({
     tagIdIndex: index("tagIdIndex").on(table.tagId),
@@ -162,13 +162,13 @@ export const tagsRelations = relations(tagsTable, ({ many }) => ({
 }));
 
 export const tagOwnersTable = pgTable(
-  "tagOwners",
+  "tagowners",
   {
-    tagId: uuid("tagId").references(() => tagsTable.tagId, {
+    tagId: uuid("tagid").references(() => tagsTable.tagId, {
       onDelete: "cascade",
       onUpdate: "cascade",
     }),
-    ownerId: uuid("ownerId").references(() => usersTable.userId, {
+    ownerId: uuid("ownerid").references(() => usersTable.userId, {
       onDelete: "cascade",
       onUpdate: "cascade",
     }),
@@ -191,13 +191,13 @@ export const tagOwnersRelations = relations(tagOwnersTable, ({ one }) => ({
 }));
 
 export const taggedRestaurantsTable = pgTable(
-  "taggedRestaurants",
+  "taggedrestaurants",
   {
-    tagId: uuid("tagId").references(() => tagsTable.tagId, {
+    tagId: uuid("tagid").references(() => tagsTable.tagId, {
       onDelete: "cascade",
       onUpdate: "cascade",
     }),
-    placeId: varchar("placeId", { length: 300 }).references(
+    placeId: varchar("placeid", { length: 300 }).references(
       () => restaurantsTable.placeId,
       {
         onDelete: "cascade",
@@ -228,8 +228,8 @@ export const taggedRestaurantsRelations = relations(
 export const datesTable = pgTable(
   "dates",
   {
-    dateId: uuid("dateId").primaryKey().defaultRandom(),
-    occuredAt: timestamp("occuredAt").notNull(),
+    dateId: uuid("dateid").primaryKey().defaultRandom(),
+    occuredAt: timestamp("occuredat").notNull(),
   },
   (table) => ({
     dateIdAndOccuredAtIndex: index("dateIdAndOccuredAtIndex").on(
@@ -245,16 +245,16 @@ export const datesRelations = relations(datesTable, ({ many }) => ({
 }));
 
 export const dateParticipantsTable = pgTable(
-  "dateParticipants",
+  "dateparticipants",
   {
-    displayId: uuid("displayId").primaryKey().defaultRandom(),
-    dateId: uuid("dateId")
+    displayId: uuid("displayid").primaryKey().defaultRandom(),
+    dateId: uuid("dateid")
       .notNull()
       .references(() => datesTable.dateId, {
         onDelete: "cascade",
         onUpdate: "cascade",
       }),
-    participantId: uuid("participantId").references(() => usersTable.userId, {
+    participantId: uuid("participantid").references(() => usersTable.userId, {
       onDelete: "set null",
       onUpdate: "cascade",
     }),
@@ -279,20 +279,20 @@ export const dateParticipantsRelations = relations(
 );
 
 export const privateMessagesTable = pgTable(
-  "privateMessages",
+  "privatemessages",
   {
     messageId: uuid("id").primaryKey().defaultRandom(),
-    dateId: uuid("dateId")
+    dateId: uuid("dateid")
       .notNull()
       .references(() => datesTable.dateId, {
         onDelete: "cascade",
         onUpdate: "cascade",
       }),
-    senderId: uuid("senderId").references(() => usersTable.userId, {
+    senderId: uuid("senderid").references(() => usersTable.userId, {
       onDelete: "set null",
       onUpdate: "cascade",
     }),
-    sentAt: timestamp("sentAt").default(sql`now()`),
+    sentAt: timestamp("sentat").default(sql`now()`),
     content: text("content").notNull(),
   },
   (table) => ({
