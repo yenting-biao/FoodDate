@@ -54,7 +54,7 @@ export const restaurantsRelations = relations(restaurantsTable, ({ many }) => ({
 }));
 
 export const openingHoursTable = pgTable(
-  "openingHours",
+  "openinghours",
   {
     displayId: uuid("displayid").primaryKey().defaultRandom(),
     placeId: varchar("placeid", { length: 300 }).references(
@@ -80,7 +80,7 @@ export const openingHoursRelations = relations(
 );
 
 export const restaurantTypesTable = pgTable(
-  "restaurantTypes",
+  "restauranttypes",
   {
     placeId: varchar("placeid", { length: 300 }).references(
       () => restaurantsTable.placeId,
@@ -162,7 +162,7 @@ export const tagsRelations = relations(tagsTable, ({ many }) => ({
 }));
 
 export const tagOwnersTable = pgTable(
-  "tagOwners",
+  "tagowners",
   {
     tagId: uuid("tagid").references(() => tagsTable.tagId, {
       onDelete: "cascade",
@@ -191,7 +191,7 @@ export const tagOwnersRelations = relations(tagOwnersTable, ({ one }) => ({
 }));
 
 export const taggedRestaurantsTable = pgTable(
-  "taggedRestaurants",
+  "taggedrestaurants",
   {
     tagId: uuid("tagid").references(() => tagsTable.tagId, {
       onDelete: "cascade",
@@ -245,7 +245,7 @@ export const datesRelations = relations(datesTable, ({ many }) => ({
 }));
 
 export const dateParticipantsTable = pgTable(
-  "dateParticipants",
+  "dateparticipants",
   {
     displayId: uuid("displayid").primaryKey().defaultRandom(),
     dateId: uuid("dateid")
@@ -279,7 +279,7 @@ export const dateParticipantsRelations = relations(
 );
 
 export const privateMessagesTable = pgTable(
-  "privateMessages",
+  "privatemessages",
   {
     messageId: uuid("id").primaryKey().defaultRandom(),
     dateId: uuid("dateid")
