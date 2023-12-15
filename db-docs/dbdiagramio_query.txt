@@ -17,14 +17,14 @@ Table RESTAURANTS {
 Table OPENING_HOURS {
   displayId uuid [primary key, default: `gen_random_uuid()`]
   placeId varchar(300)
-  day varchar(50) [not null]
-  hours varchar(50) [not null]
+  day varchar(100) [not null]
+  hours varchar(100) [not null]
 }
 Ref: OPENING_HOURS.placeId > RESTAURANTS.placeId [delete: cascade, update: cascade]
 
 Table RESTAURANT_TYPES {
   placeId varchar(300) [primary key]
-  type varchar(50) [primary key]
+  type varchar(100) [primary key]
 }
 Ref: RESTAURANT_TYPES.placeId > RESTAURANTS.placeId [delete: cascade, update: cascade]
 

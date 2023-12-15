@@ -64,8 +64,8 @@ export const openingHoursTable = pgTable(
         onUpdate: "cascade",
       }
     ),
-    day: varchar("day", { length: 50 }).notNull(),
-    hours: varchar("hours", { length: 50 }).notNull(),
+    day: varchar("day", { length: 100 }).notNull(),
+    hours: varchar("hours", { length: 100 }).notNull(),
   },
   (table) => ({
     placeIdIndex: index("placeIdIndex").on(table.placeId),
@@ -89,7 +89,7 @@ export const restaurantTypesTable = pgTable(
         onUpdate: "cascade",
       }
     ),
-    type: varchar("type", { length: 50 }),
+    type: varchar("type", { length: 100 }),
   },
   (table) => ({
     pk: primaryKey({ columns: [table.placeId, table.type] }),
