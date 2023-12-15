@@ -8,8 +8,8 @@ Table USERS {
 
 Table RESTAURANTS {
   placeId varchar(300) [primary key]
-  name varchar(200) [not null]
-  address varchar(200) [not null]
+  name text [not null]
+  address text [not null]
   latitude double [not null]
   longitude double [not null]
 }

@@ -36,8 +36,8 @@ export const restaurantsTable = pgTable(
   "restaurants",
   {
     placeId: varchar("placeId", { length: 300 }).primaryKey(),
-    name: varchar("name", { length: 200 }).notNull(),
-    address: varchar("address", { length: 200 }).notNull(),
+    name: text("name").notNull(),
+    address: text("address").notNull(),
     latitude: doublePrecision("latitude").notNull(),
     longitude: doublePrecision("longitude").notNull(),
   },
