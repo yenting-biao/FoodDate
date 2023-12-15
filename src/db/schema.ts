@@ -37,7 +37,7 @@ export const restaurantsTable = pgTable(
   {
     placeId: varchar("placeId", { length: 300 }).primaryKey(),
     name: varchar("name", { length: 200 }).notNull(),
-    address: varchar("address", { length: 100 }).notNull(),
+    address: varchar("address", { length: 200 }).notNull(),
     latitude: doublePrecision("latitude").notNull(),
     longitude: doublePrecision("longitude").notNull(),
   },
@@ -89,7 +89,7 @@ export const restaurantTypesTable = pgTable(
         onUpdate: "cascade",
       }
     ),
-    type: varchar("type", { length: 20 }),
+    type: varchar("type", { length: 50 }),
   },
   (table) => ({
     pk: primaryKey({ columns: [table.placeId, table.type] }),

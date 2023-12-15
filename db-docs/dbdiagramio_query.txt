@@ -9,7 +9,7 @@ Table USERS {
 Table RESTAURANTS {
   placeId varchar(300) [primary key]
   name varchar(200) [not null]
-  address varchar(100) [not null]
+  address varchar(200) [not null]
   latitude double [not null]
   longitude double [not null]
 }
@@ -24,7 +24,7 @@ Ref: OPENING_HOURS.placeId > RESTAURANTS.placeId [delete: cascade, update: casca
 
 Table RESTAURANT_TYPES {
   placeId varchar(300) [primary key]
-  type varchar(20) [primary key]
+  type varchar(50) [primary key]
 }
 Ref: RESTAURANT_TYPES.placeId > RESTAURANTS.placeId [delete: cascade, update: cascade]
 
