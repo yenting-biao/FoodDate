@@ -1,4 +1,5 @@
 import json
+import sys
 from operator import itemgetter
 
 import psycopg2
@@ -64,11 +65,14 @@ def insertData(conn, inputFile):
 
 
 def main():
+    if len(sys.argv) < 4:
+        print("Missing arguments")
+        return
     with open(json_files[0], "r", encoding="utf-8") as file:
         restaurants = json.load(file)
     try:
         conn = psycopg2.connect(
-            "dbname='fooddate' user='wpfooddate' host='ep-curly-leaf-13171890.ap-southeast-1.aws.neon.tech' password='Or1EASG8YFqX' port='5432' sslmode='require'"
+            f"dbname='{sys.argv[0]}' user='{sys.argv[1]}' host='{sys.argv[2]}' password='{sys.argv[3]}' port='5432' sslmode='require'"
         )
         for inputFile in json_files:
             insertData(conn, inputFile)
