@@ -4,7 +4,10 @@ from operator import itemgetter
 
 import psycopg2
 
-json_files = ["Daan_District.json", "Zhongzheng_District.json"]
+json_files = [
+    "../json-data/daan-district-restaurants.json",
+    "../json-data/zhongzheng-district-restaurants.json",
+]
 blacklisted_types = ["food", "point_of_interest", "establishment"]
 types_list = []
 
@@ -54,8 +57,8 @@ def insertData(conn, inputFile):
                     )
                 conn.commit()
             except Exception as error:
+                print("Violating placeId:", placeId)
                 print("Rolling back due to error: ", error)
-                print("Violating placeId:", placeId, "\n")
                 conn.rollback()
             finally:
                 cur.close()
@@ -72,7 +75,7 @@ def main():
         restaurants = json.load(file)
     try:
         conn = psycopg2.connect(
-            f"dbname='{sys.argv[0]}' user='{sys.argv[1]}' host='{sys.argv[2]}' password='{sys.argv[3]}' port='5432' sslmode='require'"
+            f"dbname='{sys.argv[1]}' user='{sys.argv[2]}' host='{sys.argv[3]}' password='{sys.argv[4]}' port='5432' sslmode='require'"
         )
         for inputFile in json_files:
             insertData(conn, inputFile)
