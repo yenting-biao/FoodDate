@@ -5,9 +5,7 @@ export default function MissionLayout({
 }) {
   return (
     <main>
-      <div>
-        {children}
-      </div> 
+      {children}
     </main>
   )
 }
