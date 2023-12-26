@@ -54,7 +54,11 @@ export default CredentialsProvider({
           hashedPassword,
         })
         .returning();
-      return null;
+        return {
+          email: createdUser.ntuEmail,
+          username: createdUser.username,
+          id: createdUser.userId
+        };
     }
 
     // Sign in
