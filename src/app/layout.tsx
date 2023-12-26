@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import Header from './_components/Header'
+import { SessionProvider } from 'next-auth/react'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -17,12 +18,14 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <SessionProvider>
       <body className={inter.className}>
         <Header /> 
         <div className="mt-16 overflow-hidden">
           {children}
         </div>
       </body>
+      </SessionProvider>
     </html>
   )
 }
