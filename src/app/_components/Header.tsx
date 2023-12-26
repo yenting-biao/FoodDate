@@ -4,9 +4,8 @@ import AuthForm from "../_components/AuthForm";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Avatar, Badge, IconButton, ListItemIcon, ListItemText, Tooltip, Typography, Menu, MenuItem, Button, ButtonBase } from "@mui/material";
+import { Avatar, Badge, IconButton, ListItemIcon, ListItemText, Tooltip, Typography, Menu, MenuItem, ButtonBase } from "@mui/material";
 import NotificationsIcon from '@mui/icons-material/Notifications';
-import MenuIcon from '@mui/icons-material/Menu';
 import AppsRoundedIcon from '@mui/icons-material/AppsRounded';
 import Settings from '@mui/icons-material/Settings';
 
@@ -24,7 +23,7 @@ export default function Header() {
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
   };
-  const handleClose = (path: string) => {
+  const handleClose = () => {
     setAnchorEl(null);
   };
 
@@ -122,7 +121,9 @@ export default function Header() {
               </Tooltip>
               
               <Tooltip title="帳號設定">
-                <IconButton sx={{ p: 0 }}>
+                <IconButton sx={{ p: 0 }} onClick={() => {
+                  router.push("/profile");
+                }}>
                   <Avatar
                     alt={userName}
                     src={avatarUrl}
