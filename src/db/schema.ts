@@ -18,7 +18,7 @@ export const usersTable = pgTable(
     ntuEmail: varchar("ntuemail", { length: 63 }).notNull().unique(),
     username: varchar("username", { length: 80 }).notNull(),
     hashedPassword: varchar("hashedpassword", { length: 255 }).notNull(),
-    avatarUrl: varchar("avatarurl"),
+    avatarUrl: text("avatarurl"),
   },
   (table) => ({
     userIdIndex: index("userIdIndex").on(table.userId),
