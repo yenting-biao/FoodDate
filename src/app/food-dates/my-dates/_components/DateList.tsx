@@ -42,7 +42,7 @@ export default function chatListPage(props: {
         {!dates.length && (
           <div className="text-center w-full text-gray-400">
             立即
-            <Link className="underline" href="/food-dates/matchmaking">
+            <Link className="underline" href="/food-dates/find-dates">
               找飯友
             </Link>
           </div>
