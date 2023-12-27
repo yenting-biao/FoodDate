@@ -167,12 +167,12 @@ export default function RestaurantPage() {
     <>
       <main className="flex h-full items-center justify-center w-full">      
         <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!}>
-            <div className="flex flex-col h-screen w-1/3 p-1 gap-3">
+            <div className="flex flex-col h-full w-1/3 p-1 gap-3">
               <div className="flex w-full p-2">
                 <SearchBar />              
               </div>              
               <Divider />
-              <div className="h-screen overflow-y-scroll p-3">
+              <div className="h-full overflow-y-scroll p-3">
                 <Stack spacing={2}>
                   {restaurantName != "" && <RestaurantCard 
                     name={restaurantName}
@@ -199,12 +199,13 @@ export default function RestaurantPage() {
               </div>            
               
             </div>
-            <div className="h-screen w-2/3">
+            <div className="h-full w-2/3">
               <Map
                 center={position}
                 zoom={15}
                 onClick={handleMapClick}
                 mapId={process.env.NEXT_PUBLIC_MAP_ID}
+                class="h-full"
               >
                 <Marker position={position}/>
                 <Marker position={userPosition} icon={blueMarkerIcon}/>
