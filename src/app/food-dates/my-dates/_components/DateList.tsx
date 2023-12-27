@@ -16,7 +16,7 @@ export default function chatListPage() {
   }, [router, pathname]);
 
   return (
-    <div className="w-1/4 border-r-2 h-full overflow-scroll">
+    <div className="w-1/4 border-r-2 h-full overflow-scroll px-1">
       <h2 className="w-full text-center font-bold text-2xl py-3">我的約會</h2>
       <div className="flex flex-col w-full">
         {Array.from({ length: 15 }).map((_, index) => (
