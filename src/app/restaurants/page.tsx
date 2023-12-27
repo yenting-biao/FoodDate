@@ -42,18 +42,32 @@ export default function RestaurantPage() {
   const [restaurantAddress, setRestaurantAddress] = useState<string>("");  
   const [types, setTypes] = useState<string[]>([]);
 
-  useEffect(() => { // TODO: Detect user position every 10 seconds.
+  useEffect(() => {
+    let watcher: number | null = null;
+
     if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
+      watcher = navigator.geolocation.watchPosition(
         (position) => {
           setUserPosition({
             lat: position.coords.latitude,
             lng: position.coords.longitude,
           });
-        }
+        },
+        (error) => {
+          console.error("Error Code = " + error.code + " - " + error.message);
+        },
+        { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
       );
     }
-  }, []); // Don't remove the empty dependency array!!!
+
+    // Cleanup function
+    return () => {
+      if (watcher !== null) {
+        navigator.geolocation.clearWatch(watcher);
+      }
+    };
+  }, [userPosition]);
+  
 
   const [showRoulette, setShowRoulette] = useState<boolean>(false);
   const actions = [

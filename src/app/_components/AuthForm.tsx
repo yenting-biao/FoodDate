@@ -1,19 +1,21 @@
+"use client"
+
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import AuthInput from "./AuthInput";
 import 'react-toastify/dist/ReactToastify.css';
+import { toast } from "react-toastify";
+type Props = {
+    error?: string;
+}
 
-type AuthFormProps = {
-    onCloseAuthModal: () => void;
-};
-
-function AuthForm({ onCloseAuthModal }: AuthFormProps) {
+function AuthForm(props: Props) {
     const [email, setEmail] = useState<string>("");
     const [username, setUsername] = useState<string>("");
     const [password, setPassword] = useState<string>("");
     const [confirmPassword, setConfirmPassword] = useState<string>("");
     const [isSignUp, setIsSignUp] = useState<boolean>(false);
-    const isEmailValid = email.endsWith("@ntu.edu.tw") && (email!=="@ntu.edu.tw");
+    const isEmailValid = email=="" || email.endsWith("@ntu.edu.tw") && (email!=="@ntu.edu.tw");
     const isPasswordValid = password.length >= 8 && password.length <= 20 && /[A-Z]/.test(password) && /[a-z]/.test(password) && /\d/.test(password);
     const isPasswordConfirm = (password === confirmPassword);
     const isUsernameValid = username.length <= 20 && username.length > 0;
@@ -26,31 +28,12 @@ function AuthForm({ onCloseAuthModal }: AuthFormProps) {
             username,
             password,
             callbackUrl: `${process.env.NEXT_PUBLIC_BASE_URL}`,
-        });
+        })
     };
 
     return (
         <div className="min-w-[300px] bg-white rounded-lg shadow-lg p-6">
             <div className="flex justify-end">
-                <button
-                    onClick={onCloseAuthModal}
-                    className="text-gray-500 hover:text-gray-700"
-                >
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        className="h-6 w-6"
-                    >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M6 18L18 6M6 6l12 12"
-                        />
-                    </svg>
-                </button>
             </div>
             <div className="mb-4 text-2xl font-semibold text-center text-black">
                 {isSignUp ? "註冊" : "登入"}
@@ -125,6 +108,7 @@ function AuthForm({ onCloseAuthModal }: AuthFormProps) {
                         登入
                     </button>
                 )}
+                 {!!props.error&&<p className="bg-red-100 text-red-600 text-center p-2">帳號或密碼錯誤，請重試！</p>}
             </form>
             <div className="flex items-center justify-center mt-4">
                 {/* Additional content */}
