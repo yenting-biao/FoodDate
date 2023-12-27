@@ -6,3 +6,9 @@ export type User = {
     coins: number;
     provider: "credentials";
   };
+
+export type Message = {
+  messageId: string;
+  senderUsername: string | null;
+  content: string;
+};
