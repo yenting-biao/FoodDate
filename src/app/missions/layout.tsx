@@ -4,7 +4,7 @@ export default function MissionLayout({
   children: React.ReactNode
 }) {
   return (
-    <main>
+    <main className="p-4 flex gap-2">
       {children}
     </main>
   )
