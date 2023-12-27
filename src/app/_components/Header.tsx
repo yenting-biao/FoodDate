@@ -1,22 +1,14 @@
 "use client"
 
-import AuthForm from "../_components/AuthForm";
-
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Avatar, Badge, IconButton, ListItemIcon, ListItemText, Tooltip, Typography, Menu, MenuItem, ButtonBase } from "@mui/material";
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import AppsRoundedIcon from '@mui/icons-material/AppsRounded';
 import Settings from '@mui/icons-material/Settings';
+import { useSession } from "next-auth/react";
 
 export default function Header() {
-  const [openAuthModal, setOpenAuthModal] = useState<boolean>(false);
-  const handleOpenAuthModal = () => {
-    setOpenAuthModal(true);
-  };
-  const handleCloseAuthModal = () => {
-    setOpenAuthModal(false);
-  };
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
@@ -28,12 +20,18 @@ export default function Header() {
   };
 
   const router = useRouter();
+  const handleOpenAuthModal = () => {
+    router.push('/login');
+  };
 
   // temporary variables
-  const [auth, setAuth] = useState<boolean>(true); 
-  const userNotificationCount = 1; 
-  const userName = "User Name"; 
-  const avatarUrl = "/static/images/avatar/1.jpg"; 
+  //const [auth, setAuth] = useState<boolean>(true); 
+  const { data: session } = useSession();
+  const userNotificationCount = 1;
+
+  // Access username and avatar URL from the session
+  const userName = session?.user?.username ?? "Guest";
+  const avatarUrl = session?.user?.avatarUrl ?? "/static/images/avatar/1.jpg";
 
   return (
     <>
@@ -50,7 +48,7 @@ export default function Header() {
           {/* any other things */}
         </div>
         <div>
-        {auth ? 
+        {session ? 
           (
             <div className="flex items-center gap-3 p-3">
               <Tooltip title="More">
@@ -144,11 +142,6 @@ export default function Header() {
         }
         </div>
       </header>
-      {openAuthModal && (
-        <div className="fixed inset-0 z-10 flex items-center justify-center bg-black bg-opacity-50">
-          <AuthForm onCloseAuthModal={handleCloseAuthModal} />
-        </div>
-      )}
     </>
     
   );

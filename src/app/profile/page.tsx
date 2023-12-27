@@ -11,6 +11,7 @@ import ExpandMore from '@mui/icons-material/ExpandMore';
 import type { AlertProps } from '@mui/material/Alert';
 import MuiAlert from '@mui/material/Alert';
 import ProfileHeader from "./_components/ProfileHeader";
+import { useSession } from "next-auth/react";
 
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
   props,
@@ -20,10 +21,11 @@ const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
 });
 
 export default function ProfilePage() {
-  const username = "Togi Nukkkk";
-  const email = "toginuk@ntu.edu.tw";
+  const { data: session } = useSession();
+  const username = session?.user?.username;
+  const email = session?.user?.email;
   const bio = "嗨大家，我是大學生小明，生活在這個充滿活力的校園裡。我熱愛探索世界，對於不同的文化和飲食都充滿好奇心。平常喜歡參與社團活動，特別是戶外運動和攝影。我認為人生短暫，應該充實自己，讓每一天都過得有趣有意義。我是一個好相處的人，喜歡和不同背景的人交流，也喜歡嚐試新的食物。如果你對於冒險、音樂和美食有興趣，我們或許可以一起探索校園附近的好吃好玩之處，成為彼此生活的一部分！";
-  const coinsLeft = -100;
+  const coinsLeft = session?.user?.coins;
 
   const [changePasswordButton, setChangePasswordButton] = useState<boolean>(false);
   const [oldPassword, setOldPassword] = useState<string>("");
