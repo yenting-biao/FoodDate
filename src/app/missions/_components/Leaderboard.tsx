@@ -12,7 +12,7 @@ export default function Leaderboard () {
       </Typography>
       <div className="flex flex-col gap-3 w-full p-2 ml-1 overflow-y-scroll max-h-[75vh]">
         {Array.from({ length: 20 }).map((_, i) => {
-          const username = `User${i}${Math.floor(Math.random() * 1000000)}`;
+          const username = `user${i}${Math.floor(Math.random() * 1000000)}`;
           const coins = Math.floor(Math.random() * 1000);
           return (
             <Container 
