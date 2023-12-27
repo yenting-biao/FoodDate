@@ -4,8 +4,8 @@ export default function MapLayout({
   children: React.ReactNode
 }) {
   return (
-    <main>
-      <div>
+    <main className="h-full">
+      <div className="h-full">
         {children}
       </div> 
     </main>
