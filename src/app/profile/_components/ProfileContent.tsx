@@ -33,15 +33,51 @@ export default function ProfileContent ({ email, bio }: Props) {
   const [successSubmit, setSuccessSubmit] = useState<boolean>(false);
   const [successMessage, setSuccessMessage] = useState<string>("");
 
+  const [changingPassword, setChangingPassword] = useState<boolean>(false);
+  const [changingBio, setChangingBio] = useState<boolean>(false);
+
   const handleChangePassword = async () => {
+    setChangingPassword(true);
+    const isNewPasswordValid = newPassword.length >= 8 && newPassword.length <= 20 && /[A-Z]/.test(newPassword) && /[a-z]/.test(newPassword) && /\d/.test(newPassword);
     if (newPassword !== confirmPassword) {
       setHasError(true);
       setErrorMessage("新密碼與確認密碼不相符");
       return;
-    }    
+    } else if (!isNewPasswordValid)   {
+      setHasError(true);
+      setErrorMessage("新密碼長度要介於 8-20 個字元，且包含大小寫英文與數字");
+      return;
+    }
+
+    const res = await fetch("/api/profile", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        oldPassword,
+        newPassword,
+      }),
+    });
+    if(!res.ok) {
+      if (res.status === 401) {
+        setHasError(true);
+        setErrorMessage("舊密碼輸入錯誤，請再試一次");
+      } else {
+        setHasError(true);
+        setErrorMessage("系統忙碌中，請稍後再試"); 
+      }      
+      console.log(res.status);
+    } else {
+      setSuccessSubmit(true);
+      setSuccessMessage("成功更改密碼！");
+    }
+
+    setChangingPassword(false);
   };
 
   const handleChangeBio = async () => {
+    setChangingBio(true);
     const res = await fetch("/api/profile", {
       method: "PUT",
       headers: {
@@ -51,7 +87,7 @@ export default function ProfileContent ({ email, bio }: Props) {
         bio: newBio,
       }),
     });    
-
+    setChangingBio(false);
     if(!res.ok) {
       setHasError(true);
       setErrorMessage("系統忙碌中，請稍後再試"); 
@@ -125,6 +161,7 @@ export default function ProfileContent ({ email, bio }: Props) {
             <Button 
               className="ml-auto"
               onClick={handleChangePassword}
+              disabled={changingPassword}
             >
               確定
             </Button>
@@ -169,6 +206,7 @@ export default function ProfileContent ({ email, bio }: Props) {
         <Button 
           className="ml-auto"
           onClick={handleChangeBio}
+          disabled={changingBio}
         >
           確定
         </Button>
