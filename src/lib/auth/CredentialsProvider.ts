@@ -52,6 +52,7 @@ export default CredentialsProvider({
           username,
           ntuEmail: email.toLowerCase(),
           hashedPassword,
+          coins: 1000,
         })
         .returning();
         return {
