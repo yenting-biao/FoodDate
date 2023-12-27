@@ -14,11 +14,12 @@ import {
 export const usersTable = pgTable(
   "users",
   {
-    userId: uuid("userid").defaultRandom().notNull().unique(),
+    userId: uuid("userid").primaryKey().defaultRandom(),
     ntuEmail: varchar("ntuemail", { length: 63 }).notNull().unique(),
     username: varchar("username", { length: 80 }).notNull(),
     hashedPassword: varchar("hashedpassword", { length: 255 }).notNull(),
-    avatarUrl: varchar("avatarurl"),
+    avatarUrl: text("avatarurl"),
+    coins: integer("coins").notNull().default(0),
   },
   (table) => ({
     userIdIndex: index("userIdIndex").on(table.userId),
