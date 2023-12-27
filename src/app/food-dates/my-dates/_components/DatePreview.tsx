@@ -1,4 +1,3 @@
-import { Calendar, UserRound } from "lucide-react";
 import Link from "next/link";
 
 export type ChatPreviewProps = {
