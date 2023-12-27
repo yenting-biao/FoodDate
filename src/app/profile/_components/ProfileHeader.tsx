@@ -1,12 +1,13 @@
 "use client"
 import { useState } from "react";
-import { Alert, Avatar, Button, Dialog, DialogContent, DialogTitle, IconButton, Snackbar, TextField, Tooltip, Typography, useMediaQuery, useTheme } from "@mui/material";
+import { Alert, Avatar, Button, Dialog, DialogContent, DialogTitle, IconButton, List, ListItem, Snackbar, TextField, Tooltip, Typography, useMediaQuery, useTheme } from "@mui/material";
 import PaidIcon from '@mui/icons-material/Paid';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import CloseIcon from '@mui/icons-material/Close';
 import { signOut } from "next-auth/react";
 import { CldUploadWidget } from 'next-cloudinary';
 import { publicEnv } from "@/lib/env/public";
+import { useRouter } from "next/navigation";
 
 type Props = {
   username: string | undefined;
@@ -91,7 +92,7 @@ export default function ProfileHeader({ username, coinsLeft, width, avatarUrl }:
           options={{ 
             sources: ['local', 'url', 'camera', 'google_drive', 'dropbox'], 
             resourceType: 'image',
-            clientAllowedFormats: ['gif', 'png', 'jpg', 'jpeg'],
+            clientAllowedFormats: ['gif', 'png', 'jpg', 'jpeg', 'heif'],
           }}
           uploadPreset={publicEnv.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET}
           onSuccess={async (result) => {
@@ -190,9 +191,10 @@ type PayDialogProps = {
 }
 
 function PayDialog({ open, onClose }: PayDialogProps) {
+  const router = useRouter();
   return (
     <Dialog onClose={onClose} open={open}>
-      <DialogTitle className="font-semibold">你要課金嗎？</DialogTitle>
+      <DialogTitle className="font-semibold">想獲得更多金幣嗎？</DialogTitle>
       <IconButton
         aria-label="close"
         onClick={onClose}
@@ -205,8 +207,23 @@ function PayDialog({ open, onClose }: PayDialogProps) {
       >
         <CloseIcon />
       </IconButton>
-      <DialogContent dividers>
-        100 金幣相當於 10 元台幣，儲值 1000 金幣，再送 100 金幣。
+      <DialogContent dividers className="pt-1">
+        <List>
+          <Tooltip 
+            title={<Typography variant="subtitle2">{publicEnv.NEXT_PUBLIC_BASE_URL}/missions</Typography>}
+          >
+            <ListItem 
+              divider
+              onClick={() => router.push(`${publicEnv.NEXT_PUBLIC_BASE_URL}/missions`)}
+              className="hover:cursor-pointer hover:text-blue-500 hover:underline"
+            >
+              去每日任務賺取金幣吧～點我前往每日任務頁面！
+            </ListItem>
+          </Tooltip>          
+          <ListItem>
+            不想慢慢解任務嗎？歡迎課金支持我們，但我們還沒有這個功能 QQ
+          </ListItem>
+        </List>        
       </DialogContent>
     </Dialog>
   );
