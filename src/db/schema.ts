@@ -35,6 +35,32 @@ export const usersRelations = relations(usersTable, ({ many }) => ({
   privateMessagesTable: many(privateMessagesTable),
 }));
 
+export const missionListsTable = pgTable("mission_lists", {
+  missionId: uuid("id").primaryKey().notNull().defaultRandom(),
+  missionName: varchar("missionname", { length: 100 }).notNull(),
+  relatedPlaceId: varchar("related_placeid", { length: 300 })
+    // This is optional. If this mission does not include a restaurant, then it is null
+    .references(() => restaurantsTable.placeId, {
+      onDelete: "cascade",
+      onUpdate: "cascade",
+    }),
+  prize: integer("prize").notNull(),
+  startAt: timestamp("start_at").notNull(),
+  endAt: timestamp("end_at").notNull(),
+});
+
+export const userFinishedMissionsTable = pgTable("user_finished_missions", {
+  userId: uuid("userid").references(() => usersTable.userId, {
+    onDelete: "cascade",
+    onUpdate: "cascade",
+  }),
+  missionId: uuid("missionid").references(() => missionListsTable.missionId, {
+    onDelete: "cascade",
+    onUpdate: "cascade",
+  }),
+  finishedAt: timestamp("finished_at").defaultNow().notNull(),
+});
+
 export const restaurantsTable = pgTable(
   "restaurants",
   {
