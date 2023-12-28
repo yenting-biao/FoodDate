@@ -235,12 +235,14 @@ export const datesTable = pgTable(
   "dates",
   {
     dateId: uuid("dateid").primaryKey().notNull().defaultRandom(),
-    occuredAt: timestamp("occuredat").notNull(),
+    createdAt: timestamp("createdat")
+      .default(sql`now()`)
+      .notNull(),
   },
   (table) => ({
     dateIdAndOccuredAtIndex: index("dateIdAndOccuredAtIndex").on(
       table.dateId,
-      table.occuredAt
+      table.createdAt
     ),
   })
 );

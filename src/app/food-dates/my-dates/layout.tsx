@@ -30,7 +30,7 @@ export default async function ChatsPage({
     .from(dateParticipantsTable)
     .where(eq(dateParticipantsTable.participantId, userId))
     .innerJoin(datesTable, eq(dateParticipantsTable.dateId, datesTable.dateId))
-    .orderBy(desc(datesTable.occuredAt))
+    .orderBy(desc(datesTable.createdAt))
     .execute();
 
   const dateIds = dateIdsRet.map((obj) => obj.dateId);
