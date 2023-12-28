@@ -237,8 +237,9 @@ export const pendingDatesTable = pgTable(
   {
     pendingDateId: uuid("pendingdateid").primaryKey().notNull().defaultRandom(),
     participantCount: integer("participantcount").notNull(),
+    remainingSlots: integer("remainingslots").notNull(),
     time: varchar("time", { length: 50 }).notNull(),
-    restaurantTypes: varchar("restaurantTypes").notNull(),
+    restaurantTypes: text("restaurantTypes").notNull(),
   },
   (table) => ({
     pendingDateIdIndex: index("pendingDateIdIndex").on(table.pendingDateId),

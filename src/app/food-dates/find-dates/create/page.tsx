@@ -9,11 +9,16 @@ import {
   FormControlLabel,
   InputLabel,
   MenuItem,
+  Select,
+  SelectChangeEvent,
   Snackbar,
   TextField,
   Typography,
 } from "@mui/material";
 
+import OutlinedInput from "@mui/material/OutlinedInput";
+
+import ListItemText from "@mui/material/ListItemText";
 import MuiAlert, { AlertProps } from "@mui/material/Alert";
 
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
@@ -93,17 +98,21 @@ export default function FoodDatePage() {
   const [selectedTime, setSelectedTime] = useState<string>("");
   const [selectedPriceRange, setSelectedPriceRange] = useState<string>("");
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
-
-  const handleChangeType = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const currentSelectedType = event.target.name as string;
-    if (selectedTypes.includes(currentSelectedType)) {
-      setSelectedTypes(
-        selectedTypes.filter((type) => type !== currentSelectedType)
-      );
-    } else {
-      setSelectedTypes([...selectedTypes, currentSelectedType]);
-    }
-    console.log("selectedTypes", selectedTypes);
+  const ITEM_HEIGHT = 35;
+  const ITEM_PADDING_TOP = 8;
+  const MenuProps = {
+    PaperProps: {
+      style: {
+        maxHeight: ITEM_HEIGHT * 10 + ITEM_PADDING_TOP,
+        width: 250,
+      },
+    },
+  };
+  const handleChange = (event: SelectChangeEvent<typeof selectedTypes>) => {
+    const {
+      target: { value },
+    } = event;
+    setSelectedTypes(typeof value === "string" ? value.split(",") : value);
   };
 
   const countdownValue = 3;
@@ -132,192 +141,139 @@ export default function FoodDatePage() {
     setHasError(false);
   };
 
-  const handleUndoSubmit = () => {
-    setSubmitting(false);
-    setCountdown(countdownValue);
-  };
-
-  useEffect(() => {
-    if (submitting && countdown > 0) {
-      const timer = setTimeout(() => {
-        setCountdown(countdown - 1);
-      }, 1000);
-
-      return () => clearTimeout(timer);
-    }
-
-    if (submitting && countdown === 0) {
-      setHasSubmit(true);
-    }
-  }, [submitting, countdown]);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setDots((prevDots) => (prevDots + 1) % 4);
-    }, 500);
-    return () => clearInterval(timer);
-  }, []);
-
   return (
     <main className="flex flex-col items-center w-full h-full mb-14">
-      {hasSubmit ? (
-        <div className="flex flex-col items-center mt-5">
-          <Typography variant="h4" className="text-center mt-2">
-            配對中{".".repeat(dots)}
-          </Typography>
-          <Typography variant="h6" className="text-center mt-1">
-            你可以離開此頁面，我們會在配對成功後通知你
-          </Typography>
-          <div className="loading-spinner mt-16"></div>
-        </div>
-      ) : (
-        <>
-          <Typography variant="h4" className="text-center mt-7">
-            找不到人一起吃飯嗎？那你來對地方了！
-          </Typography>
-          <Typography variant="h6" className="text-center mt-1">
-            一起吃飯，賺取金幣，換取獎勵！
-          </Typography>
-          <Divider className="w-1/4 my-4" />
-          <div className="px-6 mt-2">
-            <FormControl fullWidth className="flex flex-col gap-5">
-              <div className="flex flex-col items-start">
-                <Typography variant="h6">選擇人數：</Typography>
-                <TextField
-                  select
-                  placeholder="選擇人數"
-                  value={pplCount}
-                  onChange={(data) => setPplCount(data.target.value)}
-                  margin="normal"
-                  variant="outlined"
-                  className="w-full"
-                  disabled={submitting}
-                >
-                  {Array.from({ length: 4 }, (_, i) => i + 1).map((count) => (
-                    <MenuItem key={count} value={count}>
-                      {count} 人
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </div>
-              <div className="flex flex-col items-start">
-                <Typography variant="h6">選擇時間：</Typography>
-                <TextField
-                  select
-                  placeholder="選擇時間"
-                  value={selectedTime}
-                  onChange={(data) => setSelectedTime(data.target.value)}
-                  margin="normal"
-                  variant="outlined"
-                  className="w-full"
-                  disabled={submitting}
-                >
-                  {Array.from({ length: 13 }, (_, i) => currentHour + i).map(
-                    (hour) => (
-                      <MenuItem key={hour} value={hour}>
-                        {hour % 24}:00 ~ {(hour + 1) % 24}:00
-                      </MenuItem>
-                    )
-                  )}
-                </TextField>
-              </div>
-              <div className="flex flex-col items-start">
-                <Typography variant="h6">價格範圍：</Typography>
-                <TextField
-                  select
-                  placeholder="價格範圍"
-                  value={selectedPriceRange}
-                  onChange={(data) => setSelectedPriceRange(data.target.value)}
-                  margin="normal"
-                  variant="outlined"
-                  className="w-full"
-                  disabled={submitting}
-                >
-                  {Array.from({ length: 4 }, (_, i) => i).map((count) => (
-                    <MenuItem key={count} value={count}>
-                      {priceRanges[count]}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </div>
-              <div className="flex flex-col items-start gap-2">
-                <Typography variant="h6">選擇類型：</Typography>
-                <div className="w-full">
-                  {restaurantTypes.map((type) => (
-                    <FormControlLabel
-                      key={type}
-                      control={
-                        <Checkbox
-                          onChange={handleChangeType}
-                          name={type}
-                          disabled={submitting}
-                        />
-                      }
-                      label={type}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              <Button
-                variant="contained"
-                color="primary"
-                className="bg-blue-500"
-                onClick={handleSubmit}
-                disabled={submitting}
-              >
-                開始配對
-              </Button>
-            </FormControl>
-          </div>
-          <Snackbar
-            open={hasError}
-            autoHideDuration={6000}
-            onClose={handleCloseError}
-            anchorOrigin={{ vertical: "top", horizontal: "center" }}
-          >
-            <Alert
-              onClose={handleCloseError}
-              severity="error"
-              sx={{ width: "100%" }}
+      <>
+        <Typography variant="h4" className="text-center mt-7">
+          找不到人一起吃飯嗎？那你來對地方了！
+        </Typography>
+        <Typography variant="h6" className="text-center mt-1">
+          一起吃飯，賺取金幣，換取獎勵！
+        </Typography>
+        <Divider className="w-1/4 my-4" />
+        <Typography variant="h6" className="text-center mt-1 mb-4">
+          新增約會
+        </Typography>
+        <div className="px-6 mt-2 max-w-[500px] w-3/4 flex justify-center gap-5 flex-col items-center">
+          <FormControl fullWidth>
+            <InputLabel id="ppl-count-label">選擇人數</InputLabel>
+            <Select
+              labelId="ppl-count-label"
+              label="選擇人數"
+              value={pplCount}
+              onChange={(event: SelectChangeEvent) =>
+                setPplCount(event.target.value as string)
+              }
+              disabled={submitting}
             >
-              {"請填寫以下欄位：" + emptyFields.join("、")}
-            </Alert>
-          </Snackbar>
-          {submitting && (
-            <div className="mt-2 flex flex-col items-center">
-              <Typography variant="h6" className="text-center mt-2 mb-3">
-                你選擇的結果如下，你還有 {countdown} 秒鐘可以反悔， {countdown}{" "}
-                秒鐘後會開始配對......
-              </Typography>
-              <div className="w-1/2 flex flex-col">
-                <Typography variant="body1" className="text mt-2 mb-3">
-                  選擇人數：{pplCount} 人
-                </Typography>
-                <Typography variant="body1" className="mt-2 mb-3">
-                  選擇時間：{Number(selectedTime) % 24}:00 ~{" "}
-                  {(Number(selectedTime) + 1) % 24}:00
-                </Typography>
-                <Typography variant="body1" className="mt-2 mb-3">
-                  價格範圍：{priceRanges[Number(selectedPriceRange)]}
-                </Typography>
-                <Typography variant="body1" className="mt-2 mb-3">
-                  選擇類型：{selectedTypes.join(", ")}
-                </Typography>
-              </div>
-              <Button
-                variant="contained"
-                color="primary"
-                className="bg-gray-500 hover:bg-gray-600"
-                onClick={handleUndoSubmit}
-                disabled={countdown === 0}
-              >
-                讓我再想想
-              </Button>
-            </div>
-          )}
-        </>
-      )}
+              {Array.from({ length: 4 }, (_, i) => i + 1).map((count) => (
+                <MenuItem key={count} value={count}>
+                  {count} 人
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <FormControl fullWidth>
+            <InputLabel id="time-label">選擇時間（今天）</InputLabel>
+            <Select
+              value={selectedTime}
+              labelId="time-label"
+              label="選擇時間（今天）"
+              onChange={(data) => setSelectedTime(data.target.value)}
+              disabled={submitting}
+              MenuProps={MenuProps}
+            >
+              {Array.from({ length: 13 }, (_, i) => currentHour + i).map(
+                (hour) => (
+                  <MenuItem key={hour} value={hour}>
+                    {hour % 24}:00 ~ {(hour + 1) % 24}:00
+                  </MenuItem>
+                )
+              )}
+            </Select>
+          </FormControl>
+          <FormControl fullWidth>
+            <InputLabel id="price-label">價格範圍</InputLabel>
+            <Select
+              labelId="price-label"
+              label="價格範圍"
+              value={selectedPriceRange}
+              onChange={(data) => setSelectedPriceRange(data.target.value)}
+              disabled={submitting}
+            >
+              {Array.from({ length: 4 }, (_, i) => i).map((count) => (
+                <MenuItem key={count} value={count}>
+                  {priceRanges[count]}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <FormControl fullWidth>
+            <InputLabel id="types-label">餐廳類型</InputLabel>
+            <Select
+              id="types-label"
+              label="餐廳類型"
+              multiple
+              value={selectedTypes}
+              onChange={handleChange}
+              renderValue={(selected) => selected.join(", ")}
+              MenuProps={MenuProps}
+              disabled={submitting}
+            >
+              {restaurantTypes.map((type) => (
+                <MenuItem key={type} value={type}>
+                  <Checkbox checked={selectedTypes.indexOf(type) > -1} />
+                  <ListItemText primary={type} />
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <div className="flex gap-5 relative items-center">
+            <Button
+              variant="contained"
+              color="error"
+              className="bg-red-500"
+              onClick={() => {
+                setSubmitting(true);
+                setPplCount("");
+                setSelectedTime("");
+                setSelectedPriceRange("");
+                setSelectedTypes([]);
+                setSubmitting(false);
+              }}
+              disabled={submitting}
+            >
+              清除選擇
+            </Button>
+            <Button
+              variant="contained"
+              color="primary"
+              className="bg-blue-500"
+              onClick={handleSubmit}
+              disabled={submitting}
+            >
+              新增約會
+            </Button>
+            {submitting && (
+              <div className="loading-spinner absolute -right-9 w-[25px] h-[25px]"></div>
+            )}
+          </div>
+        </div>
+        <Snackbar
+          open={hasError}
+          autoHideDuration={6000}
+          onClose={handleCloseError}
+          anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        >
+          <Alert
+            onClose={handleCloseError}
+            severity="error"
+            sx={{ width: "100%" }}
+          >
+            {"請填寫以下欄位：" + emptyFields.join("、")}
+          </Alert>
+        </Snackbar>
+      </>
     </main>
   );
 }
