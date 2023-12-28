@@ -38,6 +38,7 @@ export const usersRelations = relations(usersTable, ({ many }) => ({
 export const missionListsTable = pgTable("mission_lists", {
   missionId: uuid("id").primaryKey().notNull().defaultRandom(),
   missionName: varchar("missionname", { length: 100 }).notNull(),
+  missionDescription: text("missiondescription"),
   relatedPlaceId: varchar("related_placeid", { length: 300 })
     // This is optional. If this mission does not include a restaurant, then it is null
     .references(() => restaurantsTable.placeId, {
