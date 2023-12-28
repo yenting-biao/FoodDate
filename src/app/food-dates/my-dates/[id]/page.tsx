@@ -32,7 +32,11 @@ export default function Chat() {
 
   // initial fetching
   useEffect(() => {
-    if (!username || !regex.test(dateId)) return;
+    if (!username) return;
+    if (id && !regex.test(dateId)) {
+      router.push("/food-dates/my-dates");
+      return;
+    }
     const fetchMessages = async () => {
       const res = await fetch(`/api/date/chat/${dateId}`);
       if (res.status === 404 || !res.ok) {
