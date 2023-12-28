@@ -15,7 +15,7 @@ export default async function Leaderboard () {
   }
   
   return (
-    <div className="w-1/4 p-5 border-2 border-gray-800 rounded-xl">
+    <div className="w-1/4 p-5 border-2 border-gray-800 rounded-xl h-10/12">
       <Typography 
         variant="h4" 
         className="text-center font-semibold mb-5"
