@@ -2,15 +2,24 @@ import { Typography } from "@mui/material";
 import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
 import { getLeaderBoard } from "./action";
 
-export default async function Leaderboard () {
-  const top20 = await getLeaderBoard();
-  top20[0].ranking = 1;
+type Props = {
+  userId: string;
+  username: string;
+  coins: number;
+}
 
-  for (let i = 1; i < top20.length; i++) {
-    if (top20[i].coins === top20[i - 1].coins) {
+export default async function Leaderboard ({ userId, username, coins }: Props) {
+  const top20 = await getLeaderBoard();
+  let userRanking = -1;
+  for (let i = 0; i < top20.length; i++) {
+    if (i > 0 && top20[i].coins === top20[i - 1].coins) {
       top20[i].ranking = top20[i - 1].ranking;
     } else {
       top20[i].ranking = i + 1;
+    }
+        
+    if (top20[i].userId === userId) {            
+      userRanking = top20[i].ranking;
     }
   }
   
@@ -22,7 +31,7 @@ export default async function Leaderboard () {
       >
         Leaderboard
       </Typography>
-      <div className="flex flex-col gap-3 w-full p-2 ml-1 overflow-y-scroll max-h-[75vh]">
+      <div className="flex flex-col gap-3 w-full p-2 ml-1 overflow-y-scroll max-h-[60vh]">
         {top20.map((user, i) => 
           <Container 
             key={i}
@@ -30,14 +39,26 @@ export default async function Leaderboard () {
             username={user.username}
             coins={user.coins}
           />
-        )}        
+        )}  
+      </div>
+      <div className="flex flex-col gap-3 w-full p-2 ml-1">
+        <div className="w-full p-1 text-center">
+          ...
+        </div>      
+        <Container 
+          ranking={
+            userRanking === -1 ? "n" : userRanking
+          }
+          username={`(你) ${username}`}
+          coins={coins}
+        />
       </div>
     </div>
   )
 }
 
 type ContainerProps = {
-  ranking: number;
+  ranking: number | string;
   username: string;
   coins: number;
 }

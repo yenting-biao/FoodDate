@@ -18,7 +18,7 @@ export default function MissionCard({missionId, missionName, missionDescription,
   return (
     <>
       <div 
-        className={`border border-gray-500 rounded-xl  w-full p-4 pb-12 ${finished ? "bg-gray-300 text-gray-500" : "hover:bg-gray-100 hover: cursor-pointer active:bg-gray-200"}`}
+        className={`border border-gray-500 rounded-xl  w-full p-4 pb-12 ${finished ? "bg-gray-300 text-gray-600" : "hover:bg-gray-100 hover: cursor-pointer active:bg-gray-200"}`}
         onClick={() => {
           if(!finished) {            
             setOpen(true);
@@ -80,7 +80,7 @@ function MissionDialog({ open, handleClose, missionId, missionName, prize, missi
         variant="h4"
         className="text-center pt-6"
       >
-        {missionName} / {missionId} / 
+        {missionName + " "}
         <PaidIcon sx={{ color: 'gold', width: 32, height: 32, marginBottom: 1 }}/> {prize}
       </DialogTitle>
       <DialogContent>

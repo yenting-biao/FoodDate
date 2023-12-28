@@ -6,6 +6,7 @@ export async function getLeaderBoard () {
   "use server";
   const res = await db
     .select({
+      userId: usersTable.userId,
       username: usersTable.username,
       coins: usersTable.coins,
       ranking: usersTable.coins,
@@ -72,6 +73,7 @@ export async function getFinishedMission (userId: string) {
     .from(userFinishedMissionsTable)
     .innerJoin(missionListsTable, eq(userFinishedMissionsTable.missionId, missionListsTable.missionId))
     .where(eq(userFinishedMissionsTable.userId, userId))
+    .orderBy(desc(userFinishedMissionsTable.finishedAt))
     .execute();
   return res;
 }

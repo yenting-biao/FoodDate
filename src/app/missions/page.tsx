@@ -13,6 +13,8 @@ export default async function MissionPage () {
     redirect(`${publicEnv.NEXT_PUBLIC_BASE_URL}/login`);
   }
   const userId = session?.user?.id;
+  const username = session?.user?.username;
+  const coins = session?.user?.coins;
   //const username = "TogiNukk";
   //const coins = 100;
   const unFinisedMissions = await getUnfinishedMission(userId);
@@ -20,7 +22,11 @@ export default async function MissionPage () {
 
   return (
     <>
-      <Leaderboard />
+      <Leaderboard 
+        userId={userId}
+        username={username}
+        coins={coins}
+      />
       <div className="w-full p-4 border-black rounded-xl border-2 ml-4">
         <div className="flex gap-3 items-end w-full">
           <Typography variant="h3" className="text-center w-full">

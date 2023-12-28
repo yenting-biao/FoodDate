@@ -105,8 +105,10 @@ export default function Header() {
                 router.push("/missions");
               }}
               className={menuItemStyle}
-            >
-              <ListItemText>每日任務</ListItemText>
+            >                  
+              <ListItemText>
+                任務列表
+              </ListItemText>
             </MenuItem>
             <MenuItem
               onClick={() => {
