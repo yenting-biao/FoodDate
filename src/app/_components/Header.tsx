@@ -199,7 +199,7 @@ export default function Header() {
                   <Avatar
                     alt={userName}
                     src={avatarUrl}
-                    sx={{ width: 38, height: 38 }}
+                    sx={{ width: 42, height: 42 }}
                   />
                 </IconButton>
               </Tooltip>

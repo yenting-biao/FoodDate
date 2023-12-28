@@ -208,7 +208,7 @@ export default function ProfileContent ({ email, bio }: Props) {
           onClick={handleChangeBio}
           disabled={changingBio}
         >
-          確定
+          儲存
         </Button>
       </ListItem>
     </List>

@@ -1,7 +1,19 @@
 import { Typography } from "@mui/material";
 import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
+import { getLeaderBoard } from "./action";
 
-export default function Leaderboard () {
+export default async function Leaderboard () {
+  const top20 = await getLeaderBoard();
+  top20[0].ranking = 1;
+
+  for (let i = 1; i < top20.length; i++) {
+    if (top20[i].coins === top20[i - 1].coins) {
+      top20[i].ranking = top20[i - 1].ranking;
+    } else {
+      top20[i].ranking = i + 1;
+    }
+  }
+  
   return (
     <div className="w-1/4 p-5 border-2 border-gray-800 rounded-xl">
       <Typography 
@@ -11,18 +23,14 @@ export default function Leaderboard () {
         Leaderboard
       </Typography>
       <div className="flex flex-col gap-3 w-full p-2 ml-1 overflow-y-scroll max-h-[75vh]">
-        {Array.from({ length: 20 }).map((_, i) => {
-          const username = `user${i}${Math.floor(Math.random() * 1000000)}`;
-          const coins = Math.floor(Math.random() * 1000);
-          return (
-            <Container 
-              key={i}
-              ranking={i + 1}
-              username={username}
-              coins={coins}
-            />
-          )
-        })}
+        {top20.map((user, i) => 
+          <Container 
+            key={i}
+            ranking={user.ranking}
+            username={user.username}
+            coins={user.coins}
+          />
+        )}        
       </div>
     </div>
   )
@@ -65,11 +73,13 @@ function Container({ ranking, username, coins }: ContainerProps) {
   }
   return (
     <div className="flex items-center gap-2 w-full justify-between border-black border rounded-xl p-1">
-      {RankingDiv}
-      <Typography variant="h6">
+      <div className="w-1/6">
+        {RankingDiv}
+      </div>      
+      <Typography variant="h6" className="text-start w-3/6 overflow-hidden overflow-ellipsis whitespace-nowrap">
         {username}
       </Typography>
-      <div className="mr-3">
+      <div className="mr-3 w-1/6 text-right">
         {coins}
       </div>
     </div>
