@@ -50,6 +50,10 @@ interface Restaurant {
   latitude: string,
   longitude: string,
 }
+interface Detail {
+  placeId: string,
+  type: string
+}
 export default function RestaurantPage() {
   const [position, setPosition] = useState({
     lat: 25.01834354450372,
@@ -64,6 +68,9 @@ export default function RestaurantPage() {
   const [types, setTypes] = useState<string[]>([]);
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [selectRestaurant, setSelectRestaurant] = useState(false);
+  const [SelectRestaurantDetail,setSelectRestaurantDetail] = useState<Detail[]>([]); //use selectRestaurantDetail[i].type to get types
+  const [selectRestaurantName, setSelectRestaurantName] = useState("");
+  const [selectRestaurantAddress, setSelectRestaurantAddress] = useState("");
 
   useEffect(() => {
     const fetchRestaurants = async () => {
@@ -169,10 +176,31 @@ export default function RestaurantPage() {
   const blueMarkerIcon = {
     url: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png', // URL to a blue marker icon
   };
-  const handleMarkerClick = (placeId: any) => {
+  const handleMarkerClick = async (placeId: any,name: any,address: any) => {
     setSelectRestaurant(true);
-    alert(`Place ID: ${placeId}`);
+    try {
+      const res = await fetch('/api/getRestaurantDetail', {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          placeId
+        }),
+      });
+      if (!res.ok) {
+        return;
+      }
+      const data = await res.json();
+      const restaurantDetail = data.restaurantDetail;
+      setSelectRestaurantDetail(restaurantDetail);
+      setSelectRestaurantName(name);
+      setSelectRestaurantAddress(address);
+    } catch (error) {
+      console.error(error);
+    }
   };
+
   const handleMapClick = async (event: any) => {
     // TODO: fix event type
     const placeId = event.detail.placeId;
@@ -246,6 +274,7 @@ export default function RestaurantPage() {
     }
     return shuffled;
   }
+  
 
   return (
     <>
@@ -265,10 +294,10 @@ export default function RestaurantPage() {
               <Divider />
               <div className="h-full overflow-y-scroll p-3">
                 <Stack spacing={2}>
-                  {restaurantName != "" && <RestaurantCard
-                    name={restaurantName}
-                    address={restaurantAddress}
-                    types={types}
+                  {<RestaurantCard
+                    name={selectRestaurantName}
+                    address={selectRestaurantAddress}
+                    types={SelectRestaurantDetail.map((item) => item.type)}
                     rating={4.6}
                     userRatingsTotal={100}
                     priceLevel={"$$"}
@@ -279,7 +308,7 @@ export default function RestaurantPage() {
                       key={index}
                       name="壽司漢堡123"
                       address="台北市大安區忠孝東路四段 123 號"
-                      types={["type1", "type2"]}
+                      types = {SelectRestaurantDetail.map((item) => item.type)}
                       rating={4.6}
                       userRatingsTotal={100}
                       priceLevel={"$$"}
@@ -319,7 +348,7 @@ export default function RestaurantPage() {
                     <AdvancedMarker
                       key={restaurant.placeId}
                       position={{ lat: restaurant.latitude, lng: restaurant.longitude }}
-                      onClick={() => handleMarkerClick(restaurant.placeId)}
+                      onClick={() => handleMarkerClick(restaurant.placeId,restaurant.name,restaurant.address)}
                     >
                       <div style={{
                         padding: '10px',
