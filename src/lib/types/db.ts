@@ -7,3 +7,9 @@ export type User = {
   provider: "credentials";
   bio: string;
 };
+
+export type Message = {
+  messageId: string;
+  senderUsername: string | null;
+  content: string;
+};

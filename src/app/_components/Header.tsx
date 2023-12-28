@@ -114,16 +114,23 @@ export default function Header() {
                 找餐廳
               </ListItemText>
             </MenuItem>
-            <MenuItem 
+            <MenuItem
               onClick={() => {
                 setAnchorEl(null);
-                router.push("/food-dates");
+                router.push("/food-dates/find-dates");
               }}
               className={menuItemStyle}
-            >                  
-              <ListItemText>
-                找飯友
-              </ListItemText>
+            >
+              <ListItemText>找飯友</ListItemText>
+            </MenuItem>
+            <MenuItem
+              onClick={() => {
+                setAnchorEl(null);
+                router.push("/food-dates/my-dates");
+              }}
+              className={menuItemStyle}
+            >
+              <ListItemText>我的約會</ListItemText>
             </MenuItem>
           </Menu>
         {session ? 
