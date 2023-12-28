@@ -37,6 +37,7 @@ import CancelIcon from '@mui/icons-material/Cancel';
 import SearchBar from "./_components/SearchBar";
 import RestaurantCard from "./_components/RestaurantCard";
 import { grey, red } from "@mui/material/colors";
+import { useRouter } from "next/navigation";
 
 
 const Wheel = dynamic(
@@ -54,6 +55,28 @@ interface Detail {
   placeId: string,
   type: string
 }
+type User = {
+  avatarUrl: string;
+  bio: string;
+  coins: number;
+  hashedPassword: string;
+  ntuEmail: string;
+  userId: string;
+  username: string;
+};
+type Reviewer = {
+  reviewId: string;
+  placeId: string;
+  reviewerId: string;
+  stars: number;
+  content: string;
+  expense: number;
+  reviewDate: string;
+};
+type Review = {
+  users: User;
+  reviews: Reviewer;
+};
 export default function RestaurantPage() {
   const [position, setPosition] = useState({
     lat: 25.01834354450372,
@@ -66,11 +89,15 @@ export default function RestaurantPage() {
   const [restaurantName, setRestaurantName] = useState<string>("");
   const [restaurantAddress, setRestaurantAddress] = useState<string>("");
   const [types, setTypes] = useState<string[]>([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [selectRestaurant, setSelectRestaurant] = useState(false);
-  const [SelectRestaurantDetail,setSelectRestaurantDetail] = useState<Detail[]>([]); //use selectRestaurantDetail[i].type to get types
+  const [SelectRestaurantDetail, setSelectRestaurantDetail] = useState<Detail[]>([]); //use selectRestaurantDetail[i].type to get types
   const [selectRestaurantName, setSelectRestaurantName] = useState("");
   const [selectRestaurantAddress, setSelectRestaurantAddress] = useState("");
+  const [selectRestaurantLat, setSelectRestaurantLat] = useState<number>();
+  const [selectRestaurantLng, setSelectRestaurantLng] = useState<number>();
+  const [selectRestaurantPlaceId, setSelectRestaurantPlaceId] = useState("");
 
   useEffect(() => {
     const fetchRestaurants = async () => {
@@ -176,7 +203,7 @@ export default function RestaurantPage() {
   const blueMarkerIcon = {
     url: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png', // URL to a blue marker icon
   };
-  const handleMarkerClick = async (placeId: any,name: any,address: any) => {
+  const handleMarkerClick = async (placeId: any, name: any, address: any, lat: any, lng: any) => {
     setSelectRestaurant(true);
     try {
       const res = await fetch('/api/getRestaurantDetail', {
@@ -196,6 +223,28 @@ export default function RestaurantPage() {
       setSelectRestaurantDetail(restaurantDetail);
       setSelectRestaurantName(name);
       setSelectRestaurantAddress(address);
+      setSelectRestaurantLat(lat);
+      setSelectRestaurantLng(lng);
+      setSelectRestaurantPlaceId(placeId);
+    } catch (error) {
+      console.error(error);
+    }
+    try {
+      const res2 = await fetch('/api/listReview', {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        }, body: JSON.stringify({
+          placeId
+        })
+      });
+      if (!res2.ok) {
+        return;
+      }
+      const data2 = await res2.json();
+      //console.log(data2.listReviews)
+      setReviews(data2.listReviews);
+      //todo
     } catch (error) {
       console.error(error);
     }
@@ -274,14 +323,14 @@ export default function RestaurantPage() {
     }
     return shuffled;
   }
-  
+
 
   return (
     <>
       <main className="flex h-full items-center justify-center w-full">
         <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!}>
           {selectRestaurant && (
-            <div className="flex flex-col h-full w-1/3 p-1 gap-3">
+            <div className="flex flex-col h-full w-2/5 p-1 gap-3">
               <button
                 onClick={() => setSelectRestaurant(false)}
                 className="self-end text-sm px-2 py-1 cursor-pointer" // Style as desired
@@ -298,12 +347,18 @@ export default function RestaurantPage() {
                     name={selectRestaurantName}
                     address={selectRestaurantAddress}
                     types={SelectRestaurantDetail.map((item) => item.type)}
+                    lat={selectRestaurantLat}
+                    lng={selectRestaurantLng}
+                    userPositionLat={userPosition.lat}
+                    userPositionLng={userPosition.lng}
                     rating={4.6}
                     userRatingsTotal={100}
                     priceLevel={"$$"}
                     photoReference={["/food1.jpeg"]}
+                    placeId={selectRestaurantPlaceId}
+                    reviews={reviews}
                   />}
-                  {Array.from({ length: 0 }).map((_, index) => (
+                  {/*Array.from({ length: 0 }).map((_, index) => (
                     <RestaurantCard
                       key={index}
                       name="壽司漢堡123"
@@ -314,7 +369,7 @@ export default function RestaurantPage() {
                       priceLevel={"$$"}
                       photoReference={["/food1.jpeg", "/food2.jpeg", "/food3.jpeg"]}
                     />
-                  ))}
+                  ))*/}
                 </Stack>
               </div>
             </div>
@@ -348,7 +403,7 @@ export default function RestaurantPage() {
                     <AdvancedMarker
                       key={restaurant.placeId}
                       position={{ lat: restaurant.latitude, lng: restaurant.longitude }}
-                      onClick={() => handleMarkerClick(restaurant.placeId,restaurant.name,restaurant.address)}
+                      onClick={() => handleMarkerClick(restaurant.placeId, restaurant.name, restaurant.address, restaurant.latitude, restaurant.longitude)}
                     >
                       <div style={{
                         padding: '10px',
