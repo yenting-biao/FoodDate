@@ -11,9 +11,9 @@ export default function SearchBar() {
       backgroundColor: alpha(theme.palette.common.white, 0.25),
     },
     marginLeft: 0,
-    width: '100%',    
+    width: '100%',
   }));
-  
+
   const SearchIconWrapper = styled('div')(({ theme }) => ({
     padding: theme.spacing(0, 2),
     height: '100%',
@@ -23,7 +23,7 @@ export default function SearchBar() {
     alignItems: 'center',
     justifyContent: 'center',
   }));
-  
+
   const StyledInputBase = styled(InputBase)(({ theme }) => ({
     color: 'inherit',
     '& .MuiInputBase-input': {
@@ -31,7 +31,7 @@ export default function SearchBar() {
       // vertical padding + font size from searchIcon
       paddingLeft: `calc(1em + ${theme.spacing(4)})`,
       transition: theme.transitions.create('width'),
-      width: '100%',     
+      width: '100%',
     },
   }));
 
@@ -42,7 +42,11 @@ export default function SearchBar() {
       </SearchIconWrapper>
       <StyledInputBase
         placeholder="Search for restaurant..."
-        inputProps={{ 'aria-label': 'search' }}
+        inputProps={{
+          'aria-label': 'search',
+          'id': 'restaurant-search',
+          'name': 'restaurantSearch'
+        }}
         className="border-2 rounded-full w-full"
       />
     </Search>
