@@ -21,7 +21,7 @@ export default function RootLayout({
       <SessionProvider>
       <body className={inter.className}>
         <Header /> 
-        <div className="h-screen pt-16 overflow-hidden">
+        <div className="h-screen pt-16 overflow-y-scroll">
           {children}
         </div>
       </body>

@@ -21,6 +21,7 @@ export const {
           email: usersTable.ntuEmail,
           avatarUrl: usersTable.avatarUrl, 
           coins: usersTable.coins,
+          bio: usersTable.bio,
         })
         .from(usersTable)
         .where(eq(usersTable.ntuEmail, email.toLowerCase()))
@@ -34,6 +35,7 @@ export const {
           email: user.email,
           avatarUrl: user.avatarUrl,
           coins: user.coins,
+          bio: user.bio,
         },
       };
     },
