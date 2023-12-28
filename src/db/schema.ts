@@ -9,6 +9,7 @@ import {
   integer,
   primaryKey,
   text,
+  boolean,
 } from "drizzle-orm/pg-core";
 
 export const usersTable = pgTable(
@@ -228,6 +229,41 @@ export const taggedRestaurantsRelations = relations(
       fields: [taggedRestaurantsTable.placeId],
       references: [restaurantsTable.placeId],
     }),
+  })
+);
+
+export const pendingDatesTable = pgTable(
+  "pendingDates",
+  {
+    pendingDateId: uuid("pendingdateid").primaryKey().notNull().defaultRandom(),
+    participantCount: integer("participantcount").notNull(),
+    time: varchar("time", { length: 50 }).notNull(),
+    restaurantTypes: varchar("restaurantTypes").notNull(),
+  },
+  (table) => ({
+    pendingDateIdIndex: index("pendingDateIdIndex").on(table.pendingDateId),
+  })
+);
+
+export const pendingDateParticipantsTable = pgTable(
+  "pendingdateparticipants",
+  {
+    displayId: uuid("displayid").primaryKey().notNull().defaultRandom(),
+    pendingDateId: uuid("pendingdateid")
+      .notNull()
+      .references(() => pendingDatesTable.pendingDateId, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      }),
+    participantId: uuid("participantid")
+      .notNull()
+      .references(() => usersTable.userId, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      }),
+  },
+  (table) => ({
+    pendingDateIdIndex: index("pendingDateIdIndex").on(table.pendingDateId),
   })
 );
 
