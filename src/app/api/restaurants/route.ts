@@ -10,7 +10,21 @@ export async function GET() {
     return NextResponse.json(restaurants);
   } catch (error) {
     console.error(error);
-    return new NextResponse('Internal Error', {status: 500});
+    return new NextResponse('Internal Error', { status: 500 });
+  }
+}
+export async function POST(req: NextRequest) {
+  try {
+    const reqBody = await req.json();
+    const { placeId } = reqBody;
+    const imageUrls = await db.select({
+      imageUrls: restaurantsTable.imageUrls
+    })
+      .from(restaurantsTable).where(eq(restaurantsTable.placeId, placeId))
+      .execute();
+    return NextResponse.json(imageUrls);
+  } catch (error) {
+    return new NextResponse('Internal Error', { status: 500 });
   }
 }
 
