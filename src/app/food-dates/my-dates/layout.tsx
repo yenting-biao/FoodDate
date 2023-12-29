@@ -11,6 +11,13 @@ import {
 import { desc, eq } from "drizzle-orm";
 import { db } from "@/db";
 
+export type datePreviewType = {
+  dateId: string;
+  title: string;
+  lastMessage: string | null;
+  avatarUrls: { username: string; avatarUrl: string | null }[];
+};
+
 const chineseNumbers = ["一", "二", "三", "四"];
 
 async function getDateDetails(dateId: string) {
@@ -48,12 +55,23 @@ async function getDateDetails(dateId: string) {
     .limit(1)
     .execute();
 
+  const avatarUrls = await db
+    .select({ username: usersTable.username, avatarUrl: usersTable.avatarUrl })
+    .from(dateParticipantsTable)
+    .innerJoin(
+      usersTable,
+      eq(usersTable.userId, dateParticipantsTable.participantId)
+    )
+    .where(eq(dateParticipantsTable.dateId, dateId))
+    .execute();
+
   return {
     dateId,
     title,
     lastMessage: !lastMessage
       ? null
       : (lastMessage.senderUsername ?? "[已刪除]") + ": " + lastMessage.content,
+    avatarUrls,
   };
 }
 
@@ -80,11 +98,7 @@ export default async function ChatsPage({
 
   const dateIds = dateIdsRet.map((obj) => obj.dateId);
 
-  const dates: {
-    dateId: string;
-    title: string;
-    lastMessage: string | null;
-  }[] = [];
+  const dates: datePreviewType[] = [];
 
   const dateCount = dateIds.length;
   for (let i = 0; i < dateCount; i++) {

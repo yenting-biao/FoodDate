@@ -81,9 +81,23 @@ export async function GET(
       .orderBy(desc(privateMessagesTable.sentAt))
       .execute();
 
+    const avatarUrls = await db
+      .select({
+        username: usersTable.username,
+        avatarUrl: usersTable.avatarUrl,
+      })
+      .from(dateParticipantsTable)
+      .innerJoin(
+        usersTable,
+        eq(usersTable.userId, dateParticipantsTable.participantId)
+      )
+      .where(eq(dateParticipantsTable.dateId, dateId))
+      .execute();
+
     return NextResponse.json(
       {
         participantUsernames,
+        avatarUrls,
         messages,
       },
       { status: 200 }

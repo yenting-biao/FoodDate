@@ -3,12 +3,13 @@ import Tooltip from "@mui/material/Tooltip";
 
 import { cn } from "@/lib/utils/shadcn";
 import Image from "next/image";
+import { Avatar } from "@mui/material";
 
 type MessageContainerProps = {
   username: string;
   senderUsername: string | null;
   content: string;
-  avatarUrls: Object;
+  avatarUrls: { username: string; avatarUrl: string | null }[];
 };
 
 function Urlify(message: string) {
@@ -67,12 +68,13 @@ export default function MessageContainer({
               },
             }}
           >
-            <Image
-              src="/default-avatar.png"
-              alt="default avatar"
-              width={30}
-              height={30}
-              className="rounded-full min-w-[30px]"
+            <Avatar
+              alt={username}
+              src={
+                avatarUrls.find((element) => element.username === username)
+                  ?.avatarUrl ?? ""
+              }
+              className="w-[30px] h-[30px]"
             />
           </Tooltip>
         </div>
@@ -95,12 +97,13 @@ export default function MessageContainer({
               },
             }}
           >
-            <Image
-              src="/default-avatar.png"
-              alt="default avatar"
-              width={30}
-              height={30}
-              className="rounded-full min-w-[30px]"
+            <Avatar
+              alt={username}
+              src={
+                avatarUrls.find((element) => element.username === username)
+                  ?.avatarUrl ?? ""
+              }
+              className="w-[30px] h-[30px]"
             />
           </Tooltip>
           <div className="break-all px-3 py-1 bg-gray-100 text-black rounded-r-2xl rounded-tl-2xl">

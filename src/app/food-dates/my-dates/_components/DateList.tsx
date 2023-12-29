@@ -4,26 +4,15 @@ import DatePreview from "./DatePreview";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import { Message } from "@/lib/types/db";
 import Link from "next/link";
+import { datePreviewType } from "../layout";
 
-export default function chatListPage(props: {
-  dates: {
-    dateId: string;
-    title: string;
-    lastMessage: string | null;
-  }[];
-}) {
+export default function chatListPage(props: { dates: datePreviewType[] }) {
   const [loading, setLoading] = useState<boolean>(false);
   const pathname = usePathname();
   const router = useRouter();
   const { id } = useParams();
   const currDateId = Array.isArray(id) ? id[0] : id;
-  const [dates, setDates] = useState<
-    {
-      dateId: string;
-      title: string;
-      lastMessage: string | null;
-    }[]
-  >(props.dates);
+  const [dates, setDates] = useState<datePreviewType[]>(props.dates);
   const [selectedDateId, setSelectedDateId] = useState<string>("");
   const chineseNumbers = ["一", "二", "三", "四"];
 
@@ -57,6 +46,7 @@ export default function chatListPage(props: {
             dateId={date.dateId}
             title={date.title}
             lastMessage={date.lastMessage}
+            avatarUrls={date.avatarUrls}
           />
         ))}
       </div>
