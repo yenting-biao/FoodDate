@@ -1,16 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-import { eq, and, desc, or, isNull } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 
 import { db } from "@/db";
-import {
-  datesTable,
-  dateParticipantsTable,
-  privateMessagesTable,
-  usersTable,
-  pendingDatesTable,
-  pendingDateParticipantsTable,
-} from "@/db/schema";
+import { pendingDatesTable, pendingDateParticipantsTable } from "@/db/schema";
 import { auth } from "@/lib/auth";
 
 // get all pending dates

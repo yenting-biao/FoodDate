@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Avatar,
@@ -18,8 +18,19 @@ import NotificationsIcon from "@mui/icons-material/Notifications";
 import AppsRoundedIcon from "@mui/icons-material/AppsRounded";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
+import { pusherClient } from "@/lib/pusher/client";
+
+type NotificationType = {
+  notificationId: string;
+  type: string;
+  content: string;
+  redirectUrl: string | null;
+  read: boolean;
+};
 
 export default function Header() {
+  const [loading, setLoading] = useState<boolean>(false);
+  const [notifications, setNotifications] = useState<NotificationType[]>([]);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -40,6 +51,33 @@ export default function Header() {
   const handleNotificationClose = () => {
     setNotificationAnchorEl(null);
   };
+  async function handleNotificationRead(
+    notificationId: string,
+    redirectUrl: string | null
+  ) {
+    await fetch("/api/notifications", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        notificationId,
+      }),
+    });
+    const notification = notifications.find(
+      (element) => element.notificationId === notificationId
+    );
+    setNotifications((old) =>
+      old.map((element) => {
+        if (element.notificationId !== notificationId) return element;
+        return {
+          ...element,
+          read: true,
+        };
+      })
+    );
+    if (redirectUrl) router.push(redirectUrl);
+  }
 
   const router = useRouter();
   const handleOpenAuthModal = () => {
@@ -48,14 +86,53 @@ export default function Header() {
 
   // temporary variables
   const { data: session } = useSession();
-  const userNotificationCount = 10;
+  const userNotificationCount = notifications.filter(
+    (element) => !element.read
+  ).length;
 
   // Access username and avatar URL from the session
   // const userName = session?.user?.username ?? "Guest";
-  const isAdmin = (session?.user?.email === "admin@ntu.edu.tw");
+  const isAdmin = session?.user?.email === "admin@ntu.edu.tw";
   const avatarUrl = session?.user?.avatarUrl ?? "/static/images/avatar/1.jpg";
+  const userId = session?.user?.id;
 
   const menuItemStyle = "py-3 px-6";
+
+  // initial fetching
+  useEffect(() => {
+    if (!userId) return;
+    const fetchNotifications = async () => {
+      const res = await fetch(`/api/notifications`);
+      if (!res.ok) return;
+      const data: {
+        notifications: NotificationType[];
+      } = await res.json();
+      setNotifications(data.notifications);
+      setLoading(false);
+    };
+    fetchNotifications();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId]);
+
+  useEffect(() => {
+    if (!userId) return;
+    const channelName = `private-${userId}`;
+    try {
+      const channel = pusherClient.subscribe(channelName);
+      channel.bind("notif", (newNotif: NotificationType) => {
+        setNotifications((old) => [newNotif, ...old]);
+      });
+      return () => {
+        channel.unbind("notif");
+        pusherClient.unsubscribe(channelName);
+      };
+    } catch (error) {
+      console.error("Failed to subscribe and bind to channel");
+      console.error(error);
+    }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId]);
 
   return (
     <>
@@ -74,7 +151,14 @@ export default function Header() {
             width={36}
             className="ml-2"
           />
-          {isAdmin && <Typography variant="h5" className="ml-5 text-red-500 font-semibold">Admin</Typography>}
+          {isAdmin && (
+            <Typography
+              variant="h5"
+              className="ml-5 text-red-500 font-semibold"
+            >
+              Admin
+            </Typography>
+          )}
         </ButtonBase>
         <div className="flex-grow">{/* any other things */}</div>
         <div className="flex items-center gap-3 p-3">
@@ -107,10 +191,8 @@ export default function Header() {
                 router.push("/missions");
               }}
               className={menuItemStyle}
-            >                  
-              <ListItemText>
-                任務列表
-              </ListItemText>
+            >
+              <ListItemText>任務列表</ListItemText>
             </MenuItem>
             <MenuItem
               onClick={() => {
@@ -139,19 +221,17 @@ export default function Header() {
             >
               <ListItemText>我的聚會</ListItemText>
             </MenuItem>
-            {
-              isAdmin && (
-                <MenuItem
-                  onClick={() => {
-                    setAnchorEl(null);
-                    router.push("/admin-management");
-                  }}
-                  className={menuItemStyle}
-                >
-                  <ListItemText>admin 管理頁面</ListItemText>
-                </MenuItem>
-              )
-            }
+            {isAdmin && (
+              <MenuItem
+                onClick={() => {
+                  setAnchorEl(null);
+                  router.push("/admin-management");
+                }}
+                className={menuItemStyle}
+              >
+                <ListItemText>admin 管理頁面</ListItemText>
+              </MenuItem>
+            )}
           </Menu>
           {session ? (
             <>
@@ -188,22 +268,34 @@ export default function Header() {
                 anchorOrigin={{ vertical: "bottom", horizontal: "center" }} // adjust as needed
                 transformOrigin={{ vertical: "top", horizontal: "center" }} // adjust as needed
               >
-                {Array.from({ length: userNotificationCount }).map((_, i) => {
-                  return (
-                    <MenuItem
-                      className={`${menuItemStyle} max-w-xs`}
-                      sx={{ whiteSpace: "normal" }}
-                      key={i}
-                    >
-                      <ListItemIcon>
-                        <NotificationsIcon fontSize="small" />
-                      </ListItemIcon>
-                      <ListItemText>
-                        你加入的飯局已經開始了，趕快去吃飯吧！他們在等你喔
-                      </ListItemText>
-                    </MenuItem>
-                  );
-                })}
+                {loading && (
+                  <div className="mx-5 my-2 loading-spinner h-[30px] w-[30px]"></div>
+                )}
+                {!loading && notifications.length === 0 && (
+                  <div className="mx-5 my-2">尚無通知</div>
+                )}
+                {!loading &&
+                  notifications.length > 0 &&
+                  notifications.map((notification, index) => {
+                    return (
+                      <MenuItem
+                        className={`${menuItemStyle} max-w-xs`}
+                        sx={{ whiteSpace: "normal" }}
+                        key={index}
+                        onClick={() =>
+                          handleNotificationRead(
+                            notification.notificationId,
+                            notification.redirectUrl
+                          )
+                        }
+                      >
+                        <ListItemIcon>
+                          <NotificationsIcon fontSize="small" />
+                        </ListItemIcon>
+                        <ListItemText>{notification.content}</ListItemText>
+                      </MenuItem>
+                    );
+                  })}
               </Menu>
 
               <Tooltip title="帳號設定">
@@ -213,10 +305,7 @@ export default function Header() {
                     router.push("/profile");
                   }}
                 >
-                  <Avatar
-                    src={avatarUrl}
-                    sx={{ width: 42, height: 42 }}
-                  />
+                  <Avatar src={avatarUrl} sx={{ width: 42, height: 42 }} />
                 </IconButton>
               </Tooltip>
             </>

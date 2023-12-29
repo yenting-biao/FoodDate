@@ -1,17 +1,19 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-import { eq, and, desc, or, isNull } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
 import { db } from "@/db";
 import {
   datesTable,
   dateParticipantsTable,
-  privateMessagesTable,
-  usersTable,
   pendingDatesTable,
   pendingDateParticipantsTable,
+  notificationsTable,
 } from "@/db/schema";
 import { auth } from "@/lib/auth";
+import Pusher from "pusher";
+import { privateEnv } from "@/lib/env/private";
+import { publicEnv } from "@/lib/env/public";
 
 export async function PUT(
   req: NextRequest,
@@ -92,17 +94,42 @@ export async function PUT(
     } else {
       const [newDate] = await db.insert(datesTable).values({}).returning();
       participantIds.push(userId);
-      participantIds.forEach(async (participantId) => {
+
+      const pusher = new Pusher({
+        appId: privateEnv.PUSHER_ID,
+        key: publicEnv.NEXT_PUBLIC_PUSHER_KEY,
+        secret: privateEnv.PUSHER_SECRET,
+        cluster: publicEnv.NEXT_PUBLIC_PUSHER_CLUSTER,
+        useTLS: true,
+      });
+
+      const numOfParticipants = participantIds.length;
+      for (let i = 0; i < numOfParticipants; i++) {
         await db.insert(dateParticipantsTable).values({
           dateId: newDate.dateId,
-          participantId,
+          participantId: participantIds[i],
         });
-      });
+        const [newNotif] = await db
+          .insert(notificationsTable)
+          .values({
+            targetUserId: participantIds[i],
+            type: "date-create",
+            content: "已配對成功，點擊此處開始討論聚餐活動！",
+            redirectUrl: `/food-dates/my-dates/${newDate.dateId}`,
+          })
+          .returning();
+        await pusher.trigger(`private-${participantIds[i]}`, "notif", {
+          notificationId: newNotif.notificationId,
+          type: newNotif.type,
+          content: newNotif.content,
+          redirectUrl: newNotif.redirectUrl,
+          read: false,
+        });
+      }
       await db
         .delete(pendingDatesTable)
         .where(eq(pendingDatesTable.pendingDateId, pendingDateId));
       // pendingDateParticipants should be deleted by CASCADE trigger
-      // TODO: write notifications to participants
     }
     return NextResponse.json({ status: "ok" }, { status: 200 });
   } catch (error) {

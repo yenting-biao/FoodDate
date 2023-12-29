@@ -1,22 +1,18 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 
 import {
   Button,
   Checkbox,
   Divider,
   FormControl,
-  FormControlLabel,
   InputLabel,
   MenuItem,
   Select,
   SelectChangeEvent,
   Snackbar,
-  TextField,
   Typography,
 } from "@mui/material";
-
-import OutlinedInput from "@mui/material/OutlinedInput";
 
 import ListItemText from "@mui/material/ListItemText";
 import MuiAlert, { AlertProps } from "@mui/material/Alert";
@@ -30,7 +26,6 @@ const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
 
 export default function FoodDatePage() {
   const router = useRouter();
-  const currentHour = new Date().getHours() + 1;
 
   const restaurantTypes = [
     "中式餐館",
@@ -135,6 +130,7 @@ export default function FoodDatePage() {
       setErrorMessage("請填寫以下欄位：" + emptyFields.join("、"));
       setHasError(true);
       setSubmitting(false);
+      return;
     }
     try {
       await fetch("/api/date/pending/create", {
@@ -298,7 +294,7 @@ export default function FoodDatePage() {
             severity="error"
             sx={{ width: "100%" }}
           >
-            {"請填寫以下欄位：" + emptyFields.join("、")}
+            {errorMessage}
           </Alert>
         </Snackbar>
       </>

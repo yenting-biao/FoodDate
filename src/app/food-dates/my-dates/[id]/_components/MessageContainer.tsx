@@ -1,8 +1,6 @@
 import Linkify from "react-linkify";
 import Tooltip from "@mui/material/Tooltip";
 
-import { cn } from "@/lib/utils/shadcn";
-import Image from "next/image";
 import { Avatar } from "@mui/material";
 
 type MessageContainerProps = {
