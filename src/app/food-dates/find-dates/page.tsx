@@ -251,7 +251,7 @@ export default function FindDatePage() {
                         價格範圍：{pendingDate.priceRange}
                       </div>
                       <div
-                        title="有聘請顧問, 含雜貨店, 注重健康, 拉麵洗腎幫, 泰式料理, 主打蔬食"
+                        title={pendingDate.restaurantTypes}
                         className="text-gray-600 w-full text-start whitespace-nowrap overflow-hidden text-ellipsis"
                       >
                         想去的餐廳類型：{pendingDate.restaurantTypes}
