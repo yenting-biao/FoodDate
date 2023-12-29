@@ -266,6 +266,7 @@ export const pendingDatesTable = pgTable(
     participantCount: integer("participantcount").notNull(),
     remainingSlots: integer("remainingslots").notNull(),
     time: varchar("time", { length: 50 }).notNull(),
+    priceRange: varchar("pricerange", { length: 100 }).notNull(),
     restaurantTypes: text("restaurantTypes").notNull(),
   },
   (table) => ({
