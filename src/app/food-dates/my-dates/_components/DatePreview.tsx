@@ -3,7 +3,7 @@ import Link from "next/link";
 export type ChatPreviewProps = {
   dateId: string;
   title: string;
-  lastMessage: string;
+  lastMessage: string | null;
 };
 
 export default function ChatPreview({
@@ -20,9 +20,11 @@ export default function ChatPreview({
       <h3 className="text-lg overflow-hidden overflow-ellipsis h-8 w-full">
         {title}
       </h3>
-      <p className="text-gray-500 h-6 overflow-hidden overflow-ellipsis w-5/6">
-        {lastMessage}
-      </p>
+      {!!lastMessage && (
+        <p className="text-gray-500 h-6 overflow-hidden overflow-ellipsis w-5/6">
+          {lastMessage}
+        </p>
+      )}
     </Link>
   );
 }
