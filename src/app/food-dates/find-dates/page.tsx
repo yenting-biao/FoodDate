@@ -1,81 +1,173 @@
 "use client";
-import { Divider, Tooltip, Typography } from "@mui/material";
+import { Divider, Tooltip, Typography, Snackbar } from "@mui/material";
 import Link from "next/link";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemText from "@mui/material/ListItemText";
 import ListItemAvatar from "@mui/material/ListItemAvatar";
 import Avatar from "@mui/material/Avatar";
-import * as React from "react";
 import Stack from "@mui/material/Stack";
+import React, { useEffect, useState } from "react";
+import MuiAlert, { AlertProps } from "@mui/material/Alert";
+import { Check } from "lucide-react";
+
+const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
+  function Alert(props, ref) {
+    return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+  }
+);
+
+type pendingDateType = {
+  pendingDateId: string;
+  participantCount: number;
+  remainingSlots: number;
+  time: string;
+  priceRange: string;
+  restaurantTypes: string;
+  joined: boolean;
+};
 
 export default function FindDatePage() {
+  const [loading, setLoading] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string>("");
+  const [hasError, setHasError] = useState<boolean>(false);
+  const [pendingDates, setPendingDates] = useState<pendingDateType[]>([]);
+  const chineseNumbers = ["一", "二", "三", "四"];
+
+  // initial fetching
+  useEffect(() => {
+    const fetchMessages = async () => {
+      setLoading(true);
+      const res = await fetch(`/api/date/pending`);
+      if (res.status === 404 || !res.ok) {
+        setErrorMessage("An error occured: failed to fetch pending dates");
+        setHasError(true);
+        return;
+      }
+      const data: {
+        pendingDatesWithParticipationStatus: pendingDateType[];
+      } = await res.json();
+      setPendingDates(data.pendingDatesWithParticipationStatus);
+      setLoading(false);
+    };
+    fetchMessages();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  const handleCloseError = () => {
+    setHasError(false);
+  };
   async function joinDate(dateId: string) {
     //TODO:
   }
 
   return (
-    <div className="flex flex-col items-center w-full h-full">
-      <Typography variant="h4" className="text-center mt-7">
-        找不到人一起吃飯嗎？那你來對地方了！
-      </Typography>
-      <Typography variant="h6" className="text-center mt-1">
-        一起吃飯，賺取金幣，換取獎勵！
-      </Typography>
-      <Divider className="w-1/4 my-4" />
-      <Typography variant="h6" className="text-center mt-1 text-gray-500">
-        點選加入以下聚會，或
-        <Link className="underline" href="/food-dates/find-dates/create">
-          新增自己的聚會
-        </Link>
-      </Typography>
-      <div className="w-full max-w-[500px] mt-5">
-        <Tooltip
-          arrow
-          title="加入聚會"
-          slotProps={{
-            popper: {
-              modifiers: [
-                {
-                  name: "offset",
-                  options: {
-                    offset: [0, -14],
+    <>
+      <div className="flex flex-col items-center w-full h-full">
+        <Typography variant="h4" className="text-center mt-7">
+          找不到人一起吃飯嗎？那你來對地方了！
+        </Typography>
+        <Typography variant="h6" className="text-center mt-1">
+          一起吃飯，賺取金幣，換取獎勵！
+        </Typography>
+        <Divider className="w-1/4 my-4" />
+        <Typography variant="h6" className="text-center mt-1 text-gray-500">
+          點選加入以下聚會，或
+          <Link className="underline" href="/food-dates/find-dates/create">
+            新增自己的聚會
+          </Link>
+        </Typography>
+        {loading && (
+          <div className="mt-5 loading-spinner w-[50px] h-[50px]"></div>
+        )}
+        {!loading && (
+          <div className="w-full max-w-[500px] mt-5">
+            {pendingDates.map((pendingDate) => (
+              <Tooltip
+                key={pendingDate.pendingDateId}
+                arrow
+                title="加入聚會"
+                slotProps={{
+                  popper: {
+                    modifiers: [
+                      {
+                        name: "offset",
+                        options: {
+                          offset: [0, -14],
+                        },
+                      },
+                    ],
                   },
-                },
-              ],
-            },
-          }}
-        >
-          <button
-            className="active:bg-gray-200 hover:bg-gray-100 rounded-lg w-full px-2 py-2 flex flex-col items-start"
-            onClick={(event) => {
-              event.preventDefault();
-              joinDate("hello");
-            }}
-          >
-            <div className="flex items-center gap-2">
-              <p className="text-xl">
-                四人團<span className="text-red-600">缺二</span>
-              </p>
-              <Stack direction="row" spacing={-1} className="">
-                <Avatar className="w-[25px] h-[25px] border-2 border-white" />
-                <Avatar className="w-[25px] h-[25px] border-2 border-white" />
-                <Avatar className="w-[25px] h-[25px] border-2 border-white" />
-                <Avatar className="w-[25px] h-[25px] border-2 border-white" />
-              </Stack>
-            </div>
-            <div className="mt-2 text-gray-600">時間：午餐 (12:00 ~ 1:00)</div>
-            <div className="text-gray-600">價格範圍：$$$$</div>
-            <div
-              title="有聘請顧問, 含雜貨店, 注重健康, 拉麵洗腎幫, 泰式料理, 主打蔬食"
-              className="text-gray-600 w-full text-start whitespace-nowrap overflow-hidden text-ellipsis"
-            >
-              想去的餐廳類型："有聘請顧問", "含雜貨店", "注重健康",
-              "拉麵洗腎幫", "泰式料理", "主打蔬食",
-            </div>
-          </button>
-        </Tooltip>
+                }}
+              >
+                <button
+                  className="active:bg-gray-200 hover:bg-gray-100 rounded-lg w-full px-2 py-2"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    joinDate(pendingDate.pendingDateId);
+                  }}
+                >
+                  <div className="flex justify-between items-center">
+                    <div className="flex flex-col items-start w-3/4">
+                      <div className="flex items-center gap-2">
+                        <p className="text-xl">
+                          {chineseNumbers[pendingDate.participantCount - 1]}人團
+                          <span className="text-red-600">
+                            缺{chineseNumbers[pendingDate.remainingSlots - 1]}
+                          </span>
+                        </p>
+                        <Stack direction="row" spacing={-1}>
+                          {Array.from({
+                            length: pendingDate.participantCount,
+                          }).map((_, i) => (
+                            <Avatar
+                              key={i}
+                              className="w-[25px] h-[25px] border-2 border-white"
+                            />
+                          ))}
+                        </Stack>
+                      </div>
+                      <div className="mt-2 text-gray-600">
+                        時間：{pendingDate.time}
+                      </div>
+                      <div className="text-gray-600">
+                        價格範圍：{pendingDate.priceRange}
+                      </div>
+                      <div
+                        title="有聘請顧問, 含雜貨店, 注重健康, 拉麵洗腎幫, 泰式料理, 主打蔬食"
+                        className="text-gray-600 w-full text-start whitespace-nowrap overflow-hidden text-ellipsis"
+                      >
+                        想去的餐廳類型：{pendingDate.restaurantTypes}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      {pendingDate.joined && (
+                        <>
+                          <Check color="green" strokeWidth={2} size={40} />
+                          <p className="text-green-700 text-xl">已加入</p>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </button>
+              </Tooltip>
+            ))}
+          </div>
+        )}
       </div>
-    </div>
+      <Snackbar
+        open={hasError}
+        autoHideDuration={6000}
+        onClose={handleCloseError}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          onClose={handleCloseError}
+          severity="error"
+          sx={{ width: "100%" }}
+        >
+          {errorMessage}
+        </Alert>
+      </Snackbar>
+    </>
   );
 }
