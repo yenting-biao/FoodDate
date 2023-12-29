@@ -24,7 +24,7 @@ export default function chatListPage(props: { dates: datePreviewType[] }) {
 
   useEffect(() => {
     setDates(props.dates);
-  }, [props.dates.length]);
+  }, [props.dates]);
 
   return (
     <div className="w-1/4 border-r-2 h-full overflow-y-scroll px-1 flex flex-col items-center">
