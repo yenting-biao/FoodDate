@@ -22,6 +22,15 @@ export async function GET(req: NextRequest) {
   const userId = session.user.id;
 
   try {
+    const pendingDatesParticipationSubquery = db
+      .select({
+        pendingDateId: pendingDateParticipantsTable.pendingDateId,
+        participantId: pendingDateParticipantsTable.participantId,
+      })
+      .from(pendingDateParticipantsTable)
+      .where(eq(pendingDateParticipantsTable.participantId, userId))
+      .as("sq");
+
     const pendingDates = await db
       .select({
         pendingDateId: pendingDatesTable.pendingDateId,
@@ -30,23 +39,18 @@ export async function GET(req: NextRequest) {
         time: pendingDatesTable.time,
         priceRange: pendingDatesTable.priceRange,
         restaurantTypes: pendingDatesTable.restaurantTypes,
-        participantId: pendingDateParticipantsTable.participantId,
+        participantId: pendingDatesParticipationSubquery.participantId,
       })
       .from(pendingDatesTable)
       .leftJoin(
-        pendingDateParticipantsTable,
+        pendingDatesParticipationSubquery,
         eq(
-          pendingDateParticipantsTable.pendingDateId,
+          pendingDatesParticipationSubquery.pendingDateId,
           pendingDatesTable.pendingDateId
         )
       )
-      .where(
-        or(
-          eq(pendingDateParticipantsTable.participantId, userId),
-          isNull(pendingDateParticipantsTable.participantId)
-        )
-      )
       .execute();
+    console.log(pendingDates);
 
     const pendingDatesWithParticipationStatus = pendingDates.map(
       (pendingDate) => {
