@@ -268,6 +268,9 @@ export const pendingDatesTable = pgTable(
     time: varchar("time", { length: 50 }).notNull(),
     priceRange: varchar("pricerange", { length: 100 }).notNull(),
     restaurantTypes: text("restaurantTypes").notNull(),
+    createdAt: timestamp("createdat")
+      .default(sql`now()`)
+      .notNull(),
   },
   (table) => ({
     pendingDateIdIndex: index("pendingDateIdIndex").on(table.pendingDateId),
