@@ -1,10 +1,23 @@
+"use client"
 import AuthForm from "../_components/AuthForm";
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { getSession } from "next-auth/react";
 
 type Props = {
     searchParams?: Record<"error", string>
 }
 
+
 export default function LoginPage(props: Props) {
+    const router = useRouter();
+    useEffect(() => {
+        getSession().then(session => {
+            if (session) {
+                router.push('/');
+            }
+        });
+    }, []);
     return (
         <div className="flex h-screen">
             <div className="w-1/2 flex justify-center items-center bg-gray-100">

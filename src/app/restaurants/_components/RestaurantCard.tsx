@@ -1,4 +1,3 @@
-"use client"
 import { useEffect, useState } from 'react';
 import { styled } from '@mui/material/styles';
 import {
@@ -17,11 +16,15 @@ import {
   Paper,
   Box,
   Divider,
+  Tooltip,
+  TextField,
+  Button,
 } from "@mui/material";
 import { red } from '@mui/material/colors';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import ShareIcon from '@mui/icons-material/Share';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import CreateIcon from '@mui/icons-material/Create';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import RestaurantIcon from '@mui/icons-material/Restaurant';
@@ -29,6 +32,10 @@ import PaidIcon from '@mui/icons-material/Paid';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
 import ReviewCard from './ReviewCard';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+
+
 const translateTypeToChinese = (type: string): string => {
   const translations: { [key: string]: string } = {
     'chinese_restaurant': '中式餐館',
@@ -102,9 +109,39 @@ interface ExpandMoreProps extends IconButtonProps {
   expand: boolean;
 }
 
+
+
+
+
+function calculateDistance(lat1: number, lng1: number, lat2: number | undefined, lng2: number | undefined) {
+  // Radius of the Earth in km
+  if (!lat1 || !lng1 || !lat2 || !lng2)
+    return 0;
+  const R = 6371;
+  const dLat = (lat2 - lat1) * (Math.PI / 180);
+  const dLng = (lng2 - lng1) * (Math.PI / 180);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
+    Math.sin(dLng / 2) * Math.sin(dLng / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  const distance = R * c;
+  return distance; // distance in kilometers
+}
+
+
+interface ExpandMoreProps {
+  expand: boolean;
+  // Include other props as needed
+}
+
 const ExpandMore = styled((props: ExpandMoreProps) => {
   const { expand, ...other } = props;
-  return <IconButton {...other} />;
+  return (
+    <Tooltip title="展開/關閉評論" placement="top">
+      <IconButton {...other} />
+    </Tooltip>
+  );
 })(({ theme, expand }) => ({
   transform: !expand ? 'rotate(0deg)' : 'rotate(180deg)',
   marginLeft: 'auto',
@@ -113,18 +150,106 @@ const ExpandMore = styled((props: ExpandMoreProps) => {
   }),
 }));
 
+
+type User = {
+  avatarUrl: string;
+  bio: string;
+  coins: number;
+  hashedPassword: string;
+  ntuEmail: string;
+  userId: string;
+  username: string;
+};
+type Reviewer = {
+  reviewId: string;
+  placeId: string;
+  reviewerId: string;
+  stars: number;
+  content: string;
+  expense: number;
+  reviewDate: string;
+};
+type Review = {
+  users: User;
+  reviews: Reviewer;
+};
+
+
 type RestaurantProps = {
   name: string;
   address: string;
   types: string[];
+  lat: number | undefined;
+  lng: number | undefined;
+  userPositionLat: number;
+  userPositionLng: number;
   rating: number;
   userRatingsTotal: number;
   priceLevel: string;
   photoReference: string[];
+  placeId: string;
+  reviews: Review[];
 }
 
-export default function RestaurantCard({ name, address, types, rating, userRatingsTotal, priceLevel, photoReference }: RestaurantProps) {
+export default function RestaurantCard({ name, address, types, lat, lng, userPositionLat, userPositionLng, rating, userRatingsTotal, priceLevel, photoReference, placeId, reviews }: RestaurantProps) {
+  const { data: session, status } = useSession();
+  const isLoggedIn = status === 'authenticated';
   const [expanded, setExpanded] = useState<boolean>(false);
+  const [isWithinDistance, setIsWithinDistance] = useState(false);
+  const [content, setContent] = useState<string>("");
+  const [expense, setExpense] = useState(0);
+  const [stars, setStars] = useState(5);
+  const [reviewArray, setReviewArray] = useState<Review[]>(reviews);
+
+
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setContent(event.target.value);
+  };
+  const handlePost = async () => {
+    if (content=='') return;
+    const reviewerId = session?.user?.id;
+    try {
+      const res = await fetch('/api/review', {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          placeId,
+          reviewerId,
+          stars,
+          content,
+          expense
+        })
+      });
+      if (!res.ok) {
+        return;
+      }
+  
+      const data = await res.json();
+      const newReview = data.newReview[0] as Reviewer;
+      const reviewWithUserDetails = {
+        reviews: newReview,
+        users: {
+          username: session?.user?.username || '',
+          avatarUrl: session?.user?.avatarUrl || '',
+          coins: 0,
+          bio: "",
+          hashedPassword: "",
+          ntuEmail: "",
+          userId: "",
+        }
+      };
+      setContent('');
+      //console.log(reviewWithUserDetails)
+      setReviewArray(prevReviews => [...prevReviews, reviewWithUserDetails]);
+
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+
 
   const handleExpandClick = () => {
     setExpanded(!expanded);
@@ -143,10 +268,25 @@ export default function RestaurantCard({ name, address, types, rating, userRatin
   const [showLeftArrow, setShowLeftArrow] = useState<boolean>(false);
   const [showRightArrow, setShowRightArrow] = useState<boolean>(false);
 
+
   useEffect(() => {
+    //console.log(userPositionLat)
     setShowLeftArrow(currentPhotoIndex !== 0);
     setShowRightArrow(currentPhotoIndex !== photoReference.length - 1);
   }, [currentPhotoIndex, photoReference.length]);
+  useEffect(() => {
+    // Calculate the distance and set isWithinDistance
+    if (lat && lng) {
+      const distance = calculateDistance(lat, lng, userPositionLat, userPositionLng);
+      setIsWithinDistance(distance <= 10);
+    }
+  }, [lat, lng, userPositionLat, userPositionLng]);
+  useEffect(() => {
+    setReviewArray(reviews);
+  }, [reviews]);
+
+
+
 
   return (
     <Paper elevation={5}>
@@ -229,20 +369,26 @@ export default function RestaurantCard({ name, address, types, rating, userRatin
           </Stack>
         </CardContent>
         <CardActions disableSpacing>
-          <IconButton aria-label="add to favorites">
-            <FavoriteIcon />
-          </IconButton>
-          <IconButton aria-label="share">
-            <ShareIcon />
-          </IconButton>
+          <Tooltip title="加到最愛" placement="top">
+            <IconButton aria-label="add to favorites">
+              <FavoriteIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="分享" placement="top">
+            <IconButton aria-label="share">
+              <ShareIcon />
+            </IconButton>
+          </Tooltip>
+
           <ExpandMore
             expand={expanded}
             onClick={handleExpandClick}
             aria-expanded={expanded}
             aria-label="show more"
           >
-            <ExpandMoreIcon />
+            <CreateIcon />
           </ExpandMore>
+
         </CardActions>
         <Collapse in={expanded} timeout="auto" unmountOnExit>
           <Divider />
@@ -253,17 +399,54 @@ export default function RestaurantCard({ name, address, types, rating, userRatin
             >
               評價
             </Typography>
-            <Stack gap={2}>
-              {Array.from({ length: 5 }).map((_, i) => (
-                <ReviewCard
-                  key={i}
-                  username="我是誰"
-                  reviewDate="2021/10/10"
-                  starsCount={4}
-                  content="我是評論好好吃我是評論好好吃我是評論好好吃我是評論好好吃我是評論好好吃我是評論好好吃我是評論好好吃我是評論好好吃我是評論好好吃我是評論好好吃我是評論好好吃我是評論好好吃我是評論好好吃我是評論好好吃"
+            {isLoggedIn ?
+              (isWithinDistance ? (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                  <TextField
+                    label="留下您的評論..."
+                    variant="outlined"
+                    fullWidth
+                    margin="normal"
+                    value={content}
+                    onChange={handleChange}
+                  />
+                  <Button disabled={content == ""} onClick={handlePost}>發表！</Button>
+                </div>
+
+              ) : (
+                <TextField
+                  label="請靠近餐廳以撰寫評論..."
+                  variant="outlined"
+                  fullWidth
+                  margin="normal"
+                  disabled
                 />
-              ))}
-            </Stack>
+              )) : (
+                <TextField
+                  label="請登入並靠近餐廳以撰寫評論..."
+                  variant="outlined"
+                  fullWidth
+                  margin="normal"
+                  disabled
+                />
+
+              )
+            }
+
+            <div>&nbsp;
+              <Stack gap={2}>
+                {reviewArray.map((review) => (
+                  <ReviewCard
+                    key={review.reviews.reviewId}
+                    reviewId={review.reviews.reviewId}
+                    username={review.users.username}
+                    reviewDate={review.reviews.reviewDate}
+                    starsCount={review.reviews.stars}
+                    content={review.reviews.content}
+                  //expense={review.reviewer.expense} // If you want to show the expense too
+                  />
+                ))}
+              </Stack></div>
           </CardContent>
         </Collapse>
       </Card>
