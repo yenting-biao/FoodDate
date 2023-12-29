@@ -29,7 +29,7 @@ export async function PUT(req: NextRequest) {
     try {
       validatedReqBody = editProfileSchema.parse(reqBody);
     } catch (error) {
-      console.log("error:", error);
+      console.log("parse error:", error);
       return NextResponse.json({ error: "Bad Request" }, { status: 400 });
     }
 
@@ -78,6 +78,13 @@ export async function PUT(req: NextRequest) {
       toBeUpdated = {
         ...toBeUpdated,
         avatarUrl: validatedReqBody.avatarUrl,
+      };
+    }
+    if (validatedReqBody.coins) {
+      const currentCoins = session.user.coins;
+      toBeUpdated = {
+        ...toBeUpdated,
+        coins: currentCoins + validatedReqBody.coins,
       };
     }
 

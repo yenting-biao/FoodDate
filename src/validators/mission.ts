@@ -12,3 +12,7 @@ export const missionSchema = z.object({
 export const deleteMissionSchema = z.object({
   missionId: z.string(),
 });
+
+export const finishMissionSchema = z.object({
+  missionId: z.string(),
+});
