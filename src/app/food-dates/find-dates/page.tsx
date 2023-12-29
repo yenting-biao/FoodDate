@@ -24,15 +24,15 @@ export default function FindDatePage() {
       </Typography>
       <Divider className="w-1/4 my-4" />
       <Typography variant="h6" className="text-center mt-1 text-gray-500">
-        點選加入以下約會，或
+        點選加入以下聚會，或
         <Link className="underline" href="/food-dates/find-dates/create">
-          新增自己的約會
+          新增自己的聚會
         </Link>
       </Typography>
       <div className="w-full max-w-[500px] mt-5">
         <Tooltip
           arrow
-          title="加入約會"
+          title="加入聚會"
           slotProps={{
             popper: {
               modifiers: [

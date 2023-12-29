@@ -136,6 +136,7 @@ export default function FoodDatePage() {
     alert(
       pplCount + ";" + selectedTime + ";" + selectedPriceRange + selectedTypes
     );
+    setSubmitting(false);
   };
 
   const handleCloseError = () => {
@@ -153,7 +154,7 @@ export default function FoodDatePage() {
         </Typography>
         <Divider className="w-1/4 my-4" />
         <Typography variant="h6" className="text-center mt-1 mb-4">
-          新增約會
+          新增聚會
         </Typography>
         <div className="px-6 mt-2 max-w-[500px] w-3/4 flex justify-center gap-5 flex-col items-center">
           <FormControl fullWidth>
@@ -261,7 +262,7 @@ export default function FoodDatePage() {
               onClick={handleSubmit}
               disabled={submitting}
             >
-              新增約會
+              新增聚會
             </Button>
             {submitting && (
               <div className="loading-spinner absolute -right-9 w-[25px] h-[25px]"></div>
