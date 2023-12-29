@@ -5,7 +5,7 @@ import {
   Map,
   Marker,
 } from "@vis.gl/react-google-maps";
-import { useState, useEffect, CSSProperties } from "react";
+import { useState, useEffect, CSSProperties, useRef } from "react";
 import dynamic from "next/dynamic";
 import { keyframes } from '@emotion/react';
 
@@ -99,8 +99,10 @@ export default function RestaurantPage() {
   const [selectRestaurantLng, setSelectRestaurantLng] = useState<number>();
   const [selectRestaurantPlaceId, setSelectRestaurantPlaceId] = useState("");
   const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant>();
-  
+  const initialized = useRef(false)
   useEffect(() => {
+    if (!initialized.current) {
+      initialized.current = true
     const fetchRestaurants = async () => {
       try {
         const response = await fetch('/api/restaurants');
@@ -112,7 +114,7 @@ export default function RestaurantPage() {
       }
     };
 
-    fetchRestaurants();
+    fetchRestaurants();}
   }, []);
   //useEffect(() => {
   //  console.log('Restaurants updated:', restaurants);
