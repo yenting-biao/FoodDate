@@ -14,12 +14,14 @@ export default CredentialsProvider({
     username: { label: "Userame", type: "text", optional: true },
     password: { label: "Password", type: "password" },
   },
-  async authorize(credentials) {
+  async authorize(credentials,req) {
     let validatedCredentials: {
       email: string;
       username?: string;
       password: string;
     };
+    const parts = req.url.split("=");
+    const isSignUp = parts.slice(1).join("=");
 
     try {
       validatedCredentials = authSchema.parse(credentials);
@@ -63,7 +65,9 @@ export default CredentialsProvider({
     }
 
     // Sign in
-
+    if (isSignUp=='true'){
+      return null;
+    }
     const isValid = await bcrypt.compare(password, existedUser.hashedPassword);
     if (!isValid) {
       console.log("Wrong password. Try again.");

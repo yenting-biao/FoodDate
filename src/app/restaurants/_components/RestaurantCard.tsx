@@ -167,7 +167,7 @@ type Reviewer = {
   stars: number;
   content: string;
   expense: number;
-  reviewDate: string;
+  createdAt: string;
 };
 type Review = {
   users: User;
@@ -205,9 +205,13 @@ export default function RestaurantCard({ name, address, types, lat, lng, userPos
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setContent(event.target.value);
   };
+  const handleChangeStar = (event: any, newValue: number) => {
+    setStars(newValue);
+  };
   const handlePost = async () => {
-    if (content=='') return;
+    if (content == '') return;
     const reviewerId = session?.user?.id;
+    //console.log("reviewer:"+reviewerId);
     try {
       const res = await fetch('/api/review', {
         method: "POST",
@@ -225,7 +229,7 @@ export default function RestaurantCard({ name, address, types, lat, lng, userPos
       if (!res.ok) {
         return;
       }
-  
+
       const data = await res.json();
       const newReview = data.newReview[0] as Reviewer;
       const reviewWithUserDetails = {
@@ -237,11 +241,12 @@ export default function RestaurantCard({ name, address, types, lat, lng, userPos
           bio: "",
           hashedPassword: "",
           ntuEmail: "",
-          userId: "",
+          userId: session?.user?.id || '',
         }
       };
       setContent('');
-      //console.log(reviewWithUserDetails)
+      setStars(5);
+      console.log(reviewWithUserDetails)
       setReviewArray(prevReviews => [...prevReviews, reviewWithUserDetails]);
 
     } catch (error) {
@@ -284,7 +289,13 @@ export default function RestaurantCard({ name, address, types, lat, lng, userPos
   useEffect(() => {
     setReviewArray(reviews);
   }, [reviews]);
-
+  const getAverageStars = (reviews: any) => {
+    const totalStars = reviews.reduce((acc: any, review: any) => acc + review.reviews.stars, 0);
+    const average = reviews.length > 0 ? totalStars / reviews.length : 0;
+    return parseFloat(average.toFixed(1));
+  };
+  
+  const averageStars = getAverageStars(reviewArray);
 
 
 
@@ -296,15 +307,15 @@ export default function RestaurantCard({ name, address, types, lat, lng, userPos
           subheader={ // TODO: 這東西的對齊有問題啊
             <Box display="flex" flexDirection="row" alignItems="center" gap={1}>
               <div className="mt-px">
-                {rating}
+                {averageStars}
               </div>
               <Rating
-                value={rating}
+                value={averageStars}
                 readOnly
                 precision={0.1}
               />
               <div>
-                {`(${userRatingsTotal})`}
+                {`(${reviewArray.length})`}
               </div>
             </Box>
           }
@@ -402,6 +413,9 @@ export default function RestaurantCard({ name, address, types, lat, lng, userPos
             {isLoggedIn ?
               (isWithinDistance ? (
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                  <Rating value={stars} onChange={(_, value) => {
+                    setStars(value !== null ? value : 5);
+                  }} />
                   <TextField
                     label="留下您的評論..."
                     variant="outlined"
@@ -440,7 +454,9 @@ export default function RestaurantCard({ name, address, types, lat, lng, userPos
                     key={review.reviews.reviewId}
                     reviewId={review.reviews.reviewId}
                     username={review.users.username}
-                    reviewDate={review.reviews.reviewDate}
+                    userAvatarUrl={review.users.avatarUrl}
+                    reviewerId={review.reviews.reviewerId}
+                    reviewDate={review.reviews.createdAt}
                     starsCount={review.reviews.stars}
                     content={review.reviews.content}
                   //expense={review.reviewer.expense} // If you want to show the expense too
