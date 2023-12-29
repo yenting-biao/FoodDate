@@ -70,7 +70,7 @@ async function getDateDetails(dateId: string) {
     title,
     lastMessage: !lastMessage
       ? null
-      : (lastMessage.senderUsername ?? "[已刪除]") + ": " + lastMessage.content,
+      : (lastMessage.content.slice(0,7) === "server:" ? lastMessage.content.slice(7) : ((lastMessage.senderUsername ?? "[已刪除]") + ": " + lastMessage.content)),
     avatarUrls,
   };
 }
