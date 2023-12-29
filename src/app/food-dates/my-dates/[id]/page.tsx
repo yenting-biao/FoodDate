@@ -114,11 +114,13 @@ export default function Chat() {
                     alt={element.username ?? ""}
                     key={index}
                     src={element.avatarUrl ?? ""}
-                  />
+                  >
+                    {element.username.charAt(0) ?? ""}
+                  </Avatar>
                 ))}
               </AvatarGroup>
               <p className="text-lg w-full whitespace-nowrap text-ellipsis overflow-hidden">
-                {title}fewjiofewjfiwej reiowrjweoirjewirjewioj
+                {title}
               </p>
             </div>
             <div className="px-3 flex flex-col-reverse justify-start gap-2 h-full overflow-y-scroll">
