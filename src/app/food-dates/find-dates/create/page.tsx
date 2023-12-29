@@ -118,6 +118,7 @@ export default function FoodDatePage() {
   };
 
   const [submitting, setSubmitting] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string>("");
   const [hasError, setHasError] = useState<boolean>(false);
   const [emptyFields, setEmptyFields] = useState<string[]>([]);
 
@@ -129,25 +130,31 @@ export default function FoodDatePage() {
     if (selectedPriceRange === "") tmpEmptyFields.push("價格範圍");
     if (selectedTypes.length === 0) tmpEmptyFields.push("餐廳類型");
     setEmptyFields(tmpEmptyFields);
-    setHasError(tmpEmptyFields.length > 0);
-    if (tmpEmptyFields.length > 0) {
+    const incompleteForm = tmpEmptyFields.length > 0;
+    if (incompleteForm) {
+      setErrorMessage("請填寫以下欄位：" + emptyFields.join("、"));
+      setHasError(true);
       setSubmitting(false);
-      return;
     }
-
-    await fetch("/api/date/pending/create", {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        participantCount: pplCount,
-        time: selectedTime,
-        priceRange: priceRanges[parseInt(selectedPriceRange)],
-        restaurantTypes: selectedTypes.join(", "),
-      }),
-    });
-    router.push("/food-dates/find-dates");
+    try {
+      await fetch("/api/date/pending/create", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          participantCount: pplCount,
+          time: selectedTime,
+          priceRange: priceRanges[parseInt(selectedPriceRange)],
+          restaurantTypes: selectedTypes.join(", "),
+        }),
+      });
+      router.push("/food-dates/find-dates");
+    } catch (error) {
+      setErrorMessage("An error has occured: could not create date");
+      setHasError(true);
+      setSubmitting(false);
+    }
   };
 
   const handleCloseError = () => {
