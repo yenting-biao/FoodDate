@@ -28,6 +28,7 @@ export async function GET(req: NextRequest) {
         participantCount: pendingDatesTable.participantCount,
         remainingSlots: pendingDatesTable.remainingSlots,
         time: pendingDatesTable.time,
+        priceRange: pendingDatesTable.priceRange,
         restaurantTypes: pendingDatesTable.restaurantTypes,
         participantId: pendingDateParticipantsTable.participantId,
       })
@@ -54,6 +55,7 @@ export async function GET(req: NextRequest) {
           participantCount: pendingDate.participantCount,
           remainingSlots: pendingDate.remainingSlots,
           time: pendingDate.time,
+          priceRange: pendingDate.priceRange,
           restaurantTypes: pendingDate.restaurantTypes,
           joined: pendingDate.participantId ? true : false,
         };
