@@ -33,7 +33,7 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: "Bad Request" }, { status: 400 });
     }
 
-    console.log("validatedReqBody:", validatedReqBody);
+    //console.log("validatedReqBody:", validatedReqBody);
 
     if (validatedReqBody.oldPassword && validatedReqBody.newPassword) {
       const [userExistence] = await db
