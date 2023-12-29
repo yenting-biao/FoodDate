@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { missionListsTable, userFinishedMissionsTable, usersTable } from "@/db/schema";
-import { and, desc, eq, gte, notInArray } from "drizzle-orm";
+import { and, desc, eq, gte, lte, notInArray } from "drizzle-orm";
 
 export async function getLeaderBoard () {
   "use server";
@@ -38,10 +38,11 @@ export async function getUnfinishedMission (userId: string) {
       missionDescription: missionListsTable.missionDescription,
       relatedPlaceId: missionListsTable.relatedPlaceId,
       prize: missionListsTable.prize,
+      startAt: missionListsTable.startAt,
       endAt: missionListsTable.endAt,      
     })
     .from(missionListsTable)
-    .where(and(gte(missionListsTable.endAt, new Date()), notInArray(missionListsTable.missionId, missionIds)))
+    .where(and(gte(missionListsTable.endAt, new Date()), lte(missionListsTable.startAt, new Date()), notInArray(missionListsTable.missionId, missionIds)))
     .execute();
     return res;
   } else {
@@ -52,6 +53,7 @@ export async function getUnfinishedMission (userId: string) {
       missionDescription: missionListsTable.missionDescription,
       relatedPlaceId: missionListsTable.relatedPlaceId,
       prize: missionListsTable.prize,
+      startAt: missionListsTable.startAt,
       endAt: missionListsTable.endAt,      
     })
     .from(missionListsTable)
@@ -70,6 +72,7 @@ export async function getFinishedMission (userId: string) {
       missionDescription: missionListsTable.missionDescription,
       relatedPlaceId: missionListsTable.relatedPlaceId,
       prize: missionListsTable.prize,
+      startAt: missionListsTable.startAt,
       endAt: missionListsTable.endAt,
     })
     .from(userFinishedMissionsTable)

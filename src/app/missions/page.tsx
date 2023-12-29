@@ -5,7 +5,7 @@ import { Typography } from "@mui/material";
 import { redirect } from "next/navigation";
 import { publicEnv } from "@/lib/env/public";
 import { getFinishedMission, getUnfinishedMission } from "./_components/action";
-//import PaidIcon from '@mui/icons-material/Paid';
+import PaidIcon from '@mui/icons-material/Paid';
 
 export default async function MissionPage () {
   const session = await auth();
@@ -15,8 +15,7 @@ export default async function MissionPage () {
   const userId = session?.user?.id;
   const username = session?.user?.username;
   const coins = session?.user?.coins;
-  //const username = "TogiNukk";
-  //const coins = 100;
+
   const unFinisedMissions = await getUnfinishedMission(userId);
   const finishedMissions = await getFinishedMission(userId);
 
@@ -32,11 +31,11 @@ export default async function MissionPage () {
           <Typography variant="h3" className="text-center w-full">
             任務列表
           </Typography>
-          {/*<Typography variant="h4">
+          {<Typography variant="h4">
             {`${username} 你有 `}
             <PaidIcon sx={{ color: 'gold', width: 36, height: 36, marginBottom: 1 }}/>
             {` ${coins}`} 
-    </Typography> 暫時先拿掉 我會在其他地方顯示 */}
+    </Typography> }
         </div>
         <div className="grid grid-cols-4 gap-4 mt-4 overflow-y-scroll max-h-[75vh]">
           {/*Array.from({ length: 20 }).map((_, i) => {
@@ -60,6 +59,8 @@ export default async function MissionPage () {
                 missionDescription={mission.missionDescription ?? ""}
                 prize={mission.prize}
                 finished={false}
+                startAt={mission.startAt}
+                endAt={mission.endAt}
               />    
             )
           })}
@@ -72,8 +73,10 @@ export default async function MissionPage () {
                 missionDescription={mission.missionDescription ?? ""}
                 prize={mission.prize}
                 finished={true}
+                startAt={mission.startAt}
+                endAt={mission.endAt}
               />    
-            )
+            );
           })}          
         </div>
       </div>
