@@ -12,6 +12,7 @@ export const getRestaurants = async () => {
           address: restaurantsTable.address,
           latitude: restaurantsTable.latitude,
           longitude: restaurantsTable.longitude,
+          imageUrls: restaurantsTable.imageUrls,
         })
         .from(restaurantsTable)
         .execute();

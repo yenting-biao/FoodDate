@@ -34,6 +34,8 @@ import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
 import ReviewCard from './ReviewCard';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { CldUploadWidget } from 'next-cloudinary';
+import { publicEnv } from '@/lib/env/public';
 
 
 const translateTypeToChinese = (type: string): string => {
@@ -200,14 +202,17 @@ export default function RestaurantCard({ name, address, types, lat, lng, userPos
   const [expense, setExpense] = useState(0);
   const [stars, setStars] = useState(5);
   const [reviewArray, setReviewArray] = useState<Review[]>(reviews);
-
-
+  const [url, setUrl] = useState(photoReference);
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setContent(event.target.value);
   };
-  const handleChangeStar = (event: any, newValue: number) => {
-    setStars(newValue);
-  };
+  useEffect(() => {
+    if (photoReference.length > url.length) {
+      setUrl(photoReference);
+    } else {
+      setUrl(url);
+    }
+  }, [photoReference, url]);
   const handlePost = async () => {
     if (content == '') return;
     const reviewerId = session?.user?.id;
@@ -267,7 +272,7 @@ export default function RestaurantCard({ name, address, types, lat, lng, userPos
   };
 
   const handleNextPhoto = () => {
-    setCurrentPhotoIndex(currentPhotoIndex === photoReference.length - 1 ? currentPhotoIndex : currentPhotoIndex + 1);
+    setCurrentPhotoIndex(currentPhotoIndex === url.length - 1 ? currentPhotoIndex : currentPhotoIndex + 1);
   };
 
   const [showLeftArrow, setShowLeftArrow] = useState<boolean>(false);
@@ -277,8 +282,8 @@ export default function RestaurantCard({ name, address, types, lat, lng, userPos
   useEffect(() => {
     //console.log(userPositionLat)
     setShowLeftArrow(currentPhotoIndex !== 0);
-    setShowRightArrow(currentPhotoIndex !== photoReference.length - 1);
-  }, [currentPhotoIndex, photoReference.length]);
+    setShowRightArrow(currentPhotoIndex !== url.length - 1);
+  }, [currentPhotoIndex, url.length]);
   useEffect(() => {
     // Calculate the distance and set isWithinDistance
     if (lat && lng) {
@@ -325,23 +330,56 @@ export default function RestaurantCard({ name, address, types, lat, lng, userPos
           onMouseEnter={() => {
             // Show the next arrow when the mouse enters the photo
             setShowLeftArrow(currentPhotoIndex !== 0);
-            setShowRightArrow(currentPhotoIndex !== photoReference.length - 1);
+            setShowRightArrow(url.length !== 0&&currentPhotoIndex !== url.length - 1);
+            //console.log(url.length)
           }}
           onMouseLeave={() => {
             // Hide the next arrow when the mouse leaves the photo
             setShowLeftArrow(false);
             setShowRightArrow(false);
           }}
-        >
+        ><CldUploadWidget 
+        options={{ 
+          sources: ['local', 'url', 'camera', 'google_drive', 'dropbox'], 
+          resourceType: 'image',
+          clientAllowedFormats: ['gif', 'png', 'jpg', 'jpeg', 'heif'],
+        }}
+        uploadPreset={publicEnv.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET}
+        onSuccess={async (result) => {
+          console.log(result); 
+          
+          if (result && typeof result.info === 'object' && 'secure_url' in result.info){
+            const newImageUrl: string = String(result.info.secure_url);
+            const res = await fetch("/api/restaurants", {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                placeId: placeId,
+                imageUrl: newImageUrl,
+              }),
+            });             
+            //if(!res.ok) {
+            //  console.log("error");
+            //} else {
+              setUrl(currentUrls => [...currentUrls, newImageUrl]);
+            //}
+          }               
+        }}
+      >{({ open }) => {
+        return (
           <CardMedia
             className="relative"
             component="img"
             height="120"
             // Use the current photo index to get the current photo URL
-            image={photoReference[currentPhotoIndex]}
+            image={url.length > 0 && currentPhotoIndex < url.length ? url[currentPhotoIndex] : "/food1.jpeg"}
             alt="Restaurant Photo"
+            onClick={() => open()}
 
-          />
+          />);
+        }}</CldUploadWidget>  
           {showLeftArrow && <IconButton
             className="absolute left-0 top-0 bottom-0 my-auto mx-0 z-10"
             onClick={handleBeforePhoto}

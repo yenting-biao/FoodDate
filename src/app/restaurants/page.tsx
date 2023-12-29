@@ -5,7 +5,7 @@ import {
   Map,
   Marker,
 } from "@vis.gl/react-google-maps";
-import { useState, useEffect } from "react";
+import { useState, useEffect, CSSProperties, useRef } from "react";
 import dynamic from "next/dynamic";
 import { keyframes } from '@emotion/react';
 
@@ -39,7 +39,6 @@ import RestaurantCard from "./_components/RestaurantCard";
 import { grey, red } from "@mui/material/colors";
 import { useRouter } from "next/navigation";
 
-
 const Wheel = dynamic(
   () => import('react-custom-roulette').then(mod => mod.Wheel),
   { ssr: false }
@@ -50,6 +49,7 @@ interface Restaurant {
   address: string,
   latitude: string,
   longitude: string,
+  imageUrls: string,
 }
 interface Detail {
   placeId: string,
@@ -98,23 +98,27 @@ export default function RestaurantPage() {
   const [selectRestaurantLat, setSelectRestaurantLat] = useState<number>();
   const [selectRestaurantLng, setSelectRestaurantLng] = useState<number>();
   const [selectRestaurantPlaceId, setSelectRestaurantPlaceId] = useState("");
-
+  const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant>();
+  const initialized = useRef(false)
   useEffect(() => {
+    if (!initialized.current) {
+      initialized.current = true
     const fetchRestaurants = async () => {
       try {
         const response = await fetch('/api/restaurants');
         const data = await response.json();
+        console.log(data);
         setRestaurants(data);
       } catch (error) {
         console.error('Error fetching restaurants:', error);
       }
     };
 
-    fetchRestaurants();
+    fetchRestaurants();}
   }, []);
-  useEffect(() => {
-    console.log('Restaurants updated:', restaurants);
-  }, [restaurants]);
+  //useEffect(() => {
+  //  console.log('Restaurants updated:', restaurants);
+  //}, [restaurants]);
 
   useEffect(() => {
     let watcher: number | null = null;
@@ -204,7 +208,9 @@ export default function RestaurantPage() {
     url: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png', // URL to a blue marker icon
   };
   const handleMarkerClick = async (placeId: any, name: any, address: any, lat: any, lng: any) => {
-    setSelectRestaurant(true);
+    //setSelectRestaurant(false)
+    const foundRestaurant = restaurants.find(restaurant => restaurant.name === name);
+    setSelectedRestaurant(foundRestaurant);
     try {
       const res = await fetch('/api/getRestaurantDetail', {
         method: "POST",
@@ -248,6 +254,7 @@ export default function RestaurantPage() {
     } catch (error) {
       console.error(error);
     }
+    setSelectRestaurant(true);
   };
 
   const handleMapClick = async (event: any) => {
@@ -329,7 +336,7 @@ export default function RestaurantPage() {
     <>
       <main className="flex h-full items-center justify-center w-full">
         <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!}>
-          {selectRestaurant && (
+          {(selectRestaurant&&
             <div className="flex flex-col h-full w-2/5 p-1 gap-3">
               <button
                 onClick={() => setSelectRestaurant(false)}
@@ -354,7 +361,11 @@ export default function RestaurantPage() {
                     rating={4.6}
                     userRatingsTotal={100}
                     priceLevel={"$$"}
-                    photoReference={["/food1.jpeg"]}
+                    photoReference={
+                      selectedRestaurant && selectedRestaurant.imageUrls
+                        ? JSON.parse(selectedRestaurant.imageUrls)
+                        : []
+                    }
                     placeId={selectRestaurantPlaceId}
                     reviews={reviews}
                   />}
@@ -414,11 +425,17 @@ export default function RestaurantPage() {
                         textAlign: 'center',
                         maxWidth: '150px',
                       }}>
-                        <img src={"/food1.jpeg"} style={{
-                          width: '100%',
-                          height: 'auto',
-                          borderRadius: '4px'
-                        }} />
+                        <img
+                          src={restaurant.imageUrls && JSON.parse(restaurant.imageUrls).length > 0
+                            ? JSON.parse(restaurant.imageUrls)[0]
+                            : "/food1.jpeg"} // Replace withdefault image path
+                          alt="Restaurant"
+                          style={{
+                            width: '100%',
+                            height: 'auto',
+                            borderRadius: '4px'
+                          }}
+                        />
                         <div style={{
                           marginTop: '5px',
                           fontWeight: 'bold',
