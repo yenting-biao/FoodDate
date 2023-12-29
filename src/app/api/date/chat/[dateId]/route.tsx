@@ -27,7 +27,6 @@ export async function GET(
   if (!session || !session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  const userId = session.user.id;
 
   const { dateId } = params;
   const regex =

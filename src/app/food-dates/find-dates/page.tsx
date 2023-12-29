@@ -1,16 +1,11 @@
 "use client";
 import { Divider, Tooltip, Typography, Snackbar } from "@mui/material";
 import Link from "next/link";
-import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import ListItemText from "@mui/material/ListItemText";
-import ListItemAvatar from "@mui/material/ListItemAvatar";
 import Avatar from "@mui/material/Avatar";
 import Stack from "@mui/material/Stack";
 import React, { useEffect, useState } from "react";
 import MuiAlert, { AlertProps } from "@mui/material/Alert";
 import { Check } from "lucide-react";
-import { pendingDateParticipantsTable } from "@/db/schema";
 
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
   function Alert(props, ref) {

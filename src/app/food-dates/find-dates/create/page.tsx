@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 
 import {
   Button,
@@ -16,8 +16,6 @@ import {
   Typography,
 } from "@mui/material";
 
-import OutlinedInput from "@mui/material/OutlinedInput";
-
 import ListItemText from "@mui/material/ListItemText";
 import MuiAlert, { AlertProps } from "@mui/material/Alert";
 import { useRouter } from "next/navigation";
@@ -30,7 +28,6 @@ const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
 
 export default function FoodDatePage() {
   const router = useRouter();
-  const currentHour = new Date().getHours() + 1;
 
   const restaurantTypes = [
     "中式餐館",
@@ -298,7 +295,7 @@ export default function FoodDatePage() {
             severity="error"
             sx={{ width: "100%" }}
           >
-            {"請填寫以下欄位：" + emptyFields.join("、")}
+            {errorMessage}
           </Alert>
         </Snackbar>
       </>

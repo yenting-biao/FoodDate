@@ -2,7 +2,6 @@
 import { useEffect, useState } from "react";
 import DatePreview from "./DatePreview";
 import { useParams, usePathname, useRouter } from "next/navigation";
-import { Message } from "@/lib/types/db";
 import Link from "next/link";
 import { datePreviewType } from "../layout";
 import { pusherClient } from "@/lib/pusher/client";
@@ -18,7 +17,6 @@ type PusherPreviewPayload = {
 export default function chatListPage(props: { dates: datePreviewType[] }) {
   const { data: session } = useSession();
   const userId = session?.user?.id;
-  const [loading, setLoading] = useState<boolean>(false);
   const pathname = usePathname();
   const router = useRouter();
   const { id } = useParams();
