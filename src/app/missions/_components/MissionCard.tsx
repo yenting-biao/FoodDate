@@ -2,21 +2,24 @@
 
 import { Alert, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Snackbar, Typography, useMediaQuery, useTheme } from "@mui/material";
 import PaidIcon from "@mui/icons-material/Paid";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import calculateDistance from "@/lib/utils/caldist";
+import { publicEnv } from "@/lib/env/public";
 
 type Props = {
   missionId: string;
   missionName: string;
   missionDescription: string;
+  relatedPlaceId: string | null;
   prize: number;
   finished: boolean;
   startAt: Date;
   endAt: Date;
 }
 
-export default function MissionCard({ missionId, missionName, missionDescription, prize, finished, startAt, endAt }: Props) {
+export default function MissionCard({ missionId, missionName, missionDescription, relatedPlaceId, prize, finished, startAt, endAt }: Props) {
   const [open, setOpen] = useState<boolean>(false);
   
   return (
@@ -51,6 +54,7 @@ export default function MissionCard({ missionId, missionName, missionDescription
         missionId={missionId}
         missionName={missionName}
         missionDescription={missionDescription}
+        relatedPlaceId={relatedPlaceId}
         prize={prize}
         startAt={startAt}
         endAt={endAt}
@@ -67,13 +71,46 @@ type DialogProps = {
   missionName: string;
   prize: number;
   missionDescription: string;
+  relatedPlaceId: string | null;
   startAt: Date;
   endAt: Date;
 }
 
-function MissionDialog({ open, handleClose, missionId, missionName, prize, missionDescription, startAt, endAt }: DialogProps) {
+function MissionDialog({ open, handleClose, missionId, missionName, prize, missionDescription, relatedPlaceId, startAt, endAt }: DialogProps) {
   const { update } = useSession();
   const router = useRouter();
+
+  // TODO: I am not sure whether this will cause the website to be laggy or not.
+  const [userPosition, setUserPosition] = useState({
+    lat: 25.01834354450372,
+    lng: 121.53977457666448,
+  });
+
+  useEffect(() => {
+    let watcher: number | null = null;
+
+    if (navigator.geolocation) {
+      watcher = navigator.geolocation.watchPosition(
+        (position) => {
+          setUserPosition({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          });
+        },
+        (error) => {
+          console.error("Error Code = " + error.code + " - " + error.message);
+        },
+        { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
+      );
+    }
+
+    // Cleanup function
+    return () => {
+      if (watcher !== null) {
+        navigator.geolocation.clearWatch(watcher);
+      }
+    };
+  }, [userPosition]);
 
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
@@ -90,13 +127,64 @@ function MissionDialog({ open, handleClose, missionId, missionName, prize, missi
     setSuccessSubmit(false);
   }
 
+  const verifyUserMission = async () => {
+    if (relatedPlaceId) {
+      console.log("Verifying user mission with place id: " + relatedPlaceId);
+      
+      const res = await fetch("/api/restaurants/latlng", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          placeId: relatedPlaceId,
+        })      
+      });
+      const restaurantPos = await res.json();
+      if(!res.ok) {
+        console.log("Error: ", restaurantPos);
+        setErrorMessage("系統忙碌中，請稍後再試");
+        setHasError(true);
+        setLoading(false);
+        return false;
+      }
+
+
+      if (userPosition.lat && userPosition.lng) {
+        const distance = calculateDistance(userPosition.lat, userPosition.lng, restaurantPos.lat, restaurantPos.lng);
+        console.log("Distance: ", distance);
+        
+        if (distance < publicEnv.NEXT_PUBLIC_VERIFY_DISTANCE_BASE) {
+          return true;
+        } else {
+          setErrorMessage("你離這間餐廳太遠了！");
+          setHasError(true);
+          setLoading(false);
+          return false;
+        }
+      } else {
+        setErrorMessage("請開啟定位功能");
+        setHasError(true);
+        setLoading(false);
+        return false;
+      }
+    } else {
+      if (startAt <= new Date() && endAt > new Date()) {
+        return true;
+      } else {
+        setErrorMessage("還沒到任務時間！");
+        setHasError(true);
+        setLoading(false);
+        return false;
+      }
+    }
+  }
+
   const handleVerify = async () => {
     setLoading(true);
+    const verification = await verifyUserMission();
 
-    if(!(startAt <= new Date() && endAt > new Date())) {
-      setErrorMessage("還沒到任務時間！");
-      setHasError(true);
-      setLoading(false);
+    if(!verification) {
       handleClose();
       return;
     }
