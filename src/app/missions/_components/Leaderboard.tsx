@@ -1,35 +1,64 @@
 import { Typography } from "@mui/material";
 import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
+import { getLeaderBoard } from "./action";
 
-export default function Leaderboard () {
+type Props = {
+  userId: string;
+  username: string;
+  coins: number;
+}
+
+export default async function Leaderboard ({ userId, username, coins }: Props) {
+  const top20 = await getLeaderBoard();
+  let userRanking = -1;
+  for (let i = 0; i < top20.length; i++) {
+    if (i > 0 && top20[i].coins === top20[i - 1].coins) {
+      top20[i].ranking = top20[i - 1].ranking;
+    } else {
+      top20[i].ranking = i + 1;
+    }
+        
+    if (top20[i].userId === userId) {            
+      userRanking = top20[i].ranking;
+    }
+  }
+  
   return (
-    <div className="w-1/4 p-5 border-2 border-gray-800 rounded-xl">
+    <div className="w-1/4 p-5 border-2 border-gray-800 rounded-xl h-10/12">
       <Typography 
         variant="h4" 
         className="text-center font-semibold mb-5"
       >
         Leaderboard
       </Typography>
-      <div className="flex flex-col gap-3 w-full p-2 ml-1 overflow-y-scroll max-h-[75vh]">
-        {Array.from({ length: 20 }).map((_, i) => {
-          const username = `user${i}${Math.floor(Math.random() * 1000000)}`;
-          const coins = Math.floor(Math.random() * 1000);
-          return (
-            <Container 
-              key={i}
-              ranking={i + 1}
-              username={username}
-              coins={coins}
-            />
-          )
-        })}
+      <div className="flex flex-col gap-3 w-full p-2 ml-1 overflow-y-scroll max-h-[60vh]">
+        {top20.map((user, i) => 
+          <Container 
+            key={i}
+            ranking={user.ranking}
+            username={user.username}
+            coins={user.coins}
+          />
+        )}  
+      </div>
+      <div className="flex flex-col gap-3 w-full p-2 ml-1">
+        <div className="w-full p-1 text-center">
+          ...
+        </div>      
+        <Container 
+          ranking={
+            userRanking === -1 ? "n" : userRanking
+          }
+          username={`(你) ${username}`}
+          coins={coins}
+        />
       </div>
     </div>
   )
 }
 
 type ContainerProps = {
-  ranking: number;
+  ranking: number | string;
   username: string;
   coins: number;
 }
@@ -65,11 +94,13 @@ function Container({ ranking, username, coins }: ContainerProps) {
   }
   return (
     <div className="flex items-center gap-2 w-full justify-between border-black border rounded-xl p-1">
-      {RankingDiv}
-      <Typography variant="h6">
+      <div className="w-1/6">
+        {RankingDiv}
+      </div>      
+      <Typography variant="h6" className="text-start w-3/6 overflow-hidden overflow-ellipsis whitespace-nowrap">
         {username}
       </Typography>
-      <div className="mr-3">
+      <div className="mr-3 w-1/6 text-right">
         {coins}
       </div>
     </div>

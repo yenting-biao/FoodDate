@@ -105,8 +105,10 @@ export default function Header() {
                 router.push("/missions");
               }}
               className={menuItemStyle}
-            >
-              <ListItemText>每日任務</ListItemText>
+            >                  
+              <ListItemText>
+                任務列表
+              </ListItemText>
             </MenuItem>
             <MenuItem
               onClick={() => {
@@ -199,7 +201,7 @@ export default function Header() {
                   <Avatar
                     alt={userName}
                     src={avatarUrl}
-                    sx={{ width: 38, height: 38 }}
+                    sx={{ width: 42, height: 42 }}
                   />
                 </IconButton>
               </Tooltip>

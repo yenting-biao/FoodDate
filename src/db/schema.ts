@@ -9,7 +9,6 @@ import {
   integer,
   primaryKey,
   text,
-  boolean,
 } from "drizzle-orm/pg-core";
 
 export const usersTable = pgTable(
@@ -51,11 +50,11 @@ export const missionListsTable = pgTable("mission_lists", {
 });
 
 export const userFinishedMissionsTable = pgTable("user_finished_missions", {
-  userId: uuid("userid").references(() => usersTable.userId, {
+  userId: uuid("userid").notNull().references(() => usersTable.userId, {
     onDelete: "cascade",
     onUpdate: "cascade",
   }),
-  missionId: uuid("missionid").references(() => missionListsTable.missionId, {
+  missionId: uuid("missionid").notNull().references(() => missionListsTable.missionId, {
     onDelete: "cascade",
     onUpdate: "cascade",
   }),
@@ -70,6 +69,7 @@ export const restaurantsTable = pgTable(
     address: text("address").notNull(),
     latitude: doublePrecision("latitude").notNull(),
     longitude: doublePrecision("longitude").notNull(),
+    imageUrls: text("imageurls"),
   },
   (table) => ({
     placeIdIndex: index("placeIdIndex").on(table.placeId),

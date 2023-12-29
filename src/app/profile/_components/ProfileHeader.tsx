@@ -56,6 +56,7 @@ export default function ProfileHeader({ username, coinsLeft, width, avatarUrl }:
       setEdittingUsername(false);
       setErrorMessage("系統忙碌中，請稍後再試");
       setHasError(true);
+      setNewUsername(username ?? "");
       console.log(res.status);
     } else {
       setEdittingUsername(false);
@@ -66,7 +67,7 @@ export default function ProfileHeader({ username, coinsLeft, width, avatarUrl }:
   }
 
   return (
-    <div className={`flex items-center gap-2 ${width}`}>
+    <div className={`flex items-center gap-2 ${width} bg-white`}>
       <Snackbar 
         open={successSubmit} 
         autoHideDuration={1500} 
