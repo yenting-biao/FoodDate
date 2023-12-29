@@ -279,7 +279,7 @@ export default function Header() {
                   notifications.map((notification, index) => {
                     return (
                       <MenuItem
-                        className={`${menuItemStyle} max-w-xs`}
+                        className={`${menuItemStyle} max-w-xs ${notification.read ? "" : "bg-blue-100 hover:bg-blue-200"} m-1 rounded-lg`}
                         sx={{ whiteSpace: "normal" }}
                         key={index}
                         onClick={() =>
