@@ -429,3 +429,29 @@ export const notificationsTable = pgTable(
     targetUserIdIndex: index("targetUserIdIndex").on(table.targetUserId),
   })
 );
+
+export const suggestionsTable = pgTable(
+  "suggestions",
+  {
+    suggestionId: uuid("suggestionid").primaryKey().notNull().defaultRandom(),
+    dateId: uuid("dateid")
+      .notNull()
+      .references(() => datesTable.dateId, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      }),
+    placeId: varchar("placeid", { length: 300 }).references(
+      () => restaurantsTable.placeId,
+      {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      }
+    ),
+    createdAt: timestamp("createdat")
+      .notNull()
+      .default(sql`now()`),
+  },
+  (table) => ({
+    dateIdIndex: index("dateIdIndex").on(table.dateId),
+  })
+);

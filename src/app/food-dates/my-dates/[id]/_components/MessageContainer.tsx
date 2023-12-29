@@ -30,14 +30,14 @@ export default function MessageContainer({
   content,
   avatarUrls,
 }: MessageContainerProps) {
-  const fromServer = senderUsername === "server";
+  const fromServer = content.slice(0, 7) === "server:";
   const isMine = senderUsername && username === senderUsername;
 
   return (
     <>
       {fromServer && (
         <div className="w-full text-center">
-          <p className="text-gray-400">{Urlify(content)}</p>
+          <p className="text-gray-400">{Urlify(content.slice(7))}</p>
         </div>
       )}
       {!fromServer && isMine && (

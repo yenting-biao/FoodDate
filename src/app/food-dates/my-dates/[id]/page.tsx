@@ -1,6 +1,7 @@
 "use client";
 import {
   APIProvider,
+  AdvancedMarker,
   Map,
   Marker,
   useMapsLibrary,
@@ -13,12 +14,22 @@ import { Message } from "@/lib/types/db";
 import Avatar from "@mui/material/Avatar";
 import AvatarGroup from "@mui/material/AvatarGroup";
 import { pusherClient } from "@/lib/pusher/client";
+import { Info } from "lucide-react";
+import { off } from "process";
 
 type PusherMessagePayload = {
   messageId: string;
   senderId: string;
   senderUsername: string;
   content: string;
+};
+
+type selectedRestaurantType = {
+  placeId: string;
+  name: string;
+  address: string;
+  lat: number;
+  lng: number;
 };
 
 export default function Chat() {
@@ -40,6 +51,9 @@ export default function Chat() {
   });
   const inputRef = useRef<HTMLInputElement>(null);
   const dummyElementForScrolling = useRef<HTMLDivElement>(null);
+  const [suggestedRestaurants, setSuggestedRestaurants] = useState<
+    selectedRestaurantType[]
+  >([]);
 
   const regex =
     /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -58,11 +72,15 @@ export default function Chat() {
         router.push("/food-dates/my-dates");
         return;
       }
+      const res2 = await fetch(`/api/date/suggestion/${dateId}`);
       const data: {
         participantUsernames: (string | null)[];
         avatarUrls: { username: string; avatarUrl: string | null }[];
         messages: Message[];
       } = await res.json();
+      const data2: { suggestedRestaurants: selectedRestaurantType[] } =
+        await res2.json();
+      setSuggestedRestaurants(data2.suggestedRestaurants);
       const participantCount = data.participantUsernames.length;
       let userList = "";
       for (let i = 0; i < participantCount - 1; i++)
@@ -76,6 +94,9 @@ export default function Chat() {
     fetchMessages();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [username, dateId]);
+  const redMarkerIcon = {
+    url: "https://maps.google.com/mapfiles/ms/icons/red-dot.png",
+  };
 
   useEffect(() => {
     if (!username || !regex.test(dateId)) return;
@@ -145,6 +166,74 @@ export default function Chat() {
     router.refresh();
   }
 
+  const handleMapClick = async (event: any) => {
+    const placeId = event.detail.placeId;
+    if (!placeId) return;
+
+    try {
+      const res = await fetch(
+        `https://places.googleapis.com/v1/places/${placeId}?fields=id,displayName,formattedAddress,types&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`
+      );
+      const data = await res.json();
+      const addr: string = data.formattedAddress;
+      const name: string = data.displayName.text;
+
+      if (
+        addr.includes("大安區") ||
+        addr.includes("大安区") ||
+        addr.includes("中正區") ||
+        addr.includes("中正区")
+      ) {
+        if (data.types.includes("restaurant")) {
+          setPosition({
+            lat: event.detail.latLng.lat,
+            lng: event.detail.latLng.lng,
+          });
+          const exists = suggestedRestaurants.find(
+            (element) => element.placeId === placeId
+          );
+          if (!exists) {
+            // add to list
+            await fetch(`/api/date/suggestion/${dateId}`, {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                placeId,
+              }),
+            });
+            setSuggestedRestaurants((old) => [
+              {
+                placeId,
+                name,
+                address: addr,
+                lat: event.detail.latLng.lat,
+                lng: event.detail.latLng.lng,
+              },
+              ...old,
+            ]);
+          } else {
+            await fetch(`/api/date/suggestion/${dateId}`, {
+              method: "DELETE",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                placeId,
+              }),
+            });
+            setSuggestedRestaurants((old) =>
+              old.filter((element) => element.placeId !== placeId)
+            );
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching place details:", error);
+    }
+  };
+
   if (!username || !userId) return;
 
   return (
@@ -197,17 +286,39 @@ export default function Chat() {
               />
             </form>
           </div>
-          <div className="h-full w-1/3">
-            <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!}>
-              <Map
-                center={position}
-                zoom={15}
-                mapId={process.env.NEXT_PUBLIC_MAP_ID}
-                class="h-full"
+          <div className="h-full w-1/3 flex flex-col">
+            <div className="w-full h-[100px] flex justify-center">
+              <div className="h-full w-3/4 flex flex-row gap-2 items-center justify-center">
+                <Info size={50} />
+                <div className="w-full">
+                  點選餐廳將會把餐廳加入清單或從清單刪除<br></br>
+                  紅色標記代表此餐廳在清單中
+                </div>
+              </div>
+            </div>
+            <div className="h-full flex-grow">
+              <APIProvider
+                apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!}
               >
-                {/* <Marker position={position} /> */}
-              </Map>
-            </APIProvider>
+                <Map
+                  center={position}
+                  zoom={15}
+                  mapId={process.env.NEXT_PUBLIC_MAP_ID}
+                  class="h-full"
+                  onClick={handleMapClick}
+                >
+                  {suggestedRestaurants.map((element, index) => {
+                    return (
+                      <Marker
+                        key={index}
+                        position={{ lat: element.lat, lng: element.lng }}
+                        icon={redMarkerIcon}
+                      />
+                    );
+                  })}
+                </Map>
+              </APIProvider>
+            </div>
           </div>
         </div>
       )}
