@@ -44,6 +44,7 @@ export async function POST(
   try {
     const [pendingDate] = await db
       .select({
+        participantCount: pendingDatesTable.participantCount,
         remainingSlots: pendingDatesTable.remainingSlots,
       })
       .from(pendingDatesTable)
@@ -80,10 +81,17 @@ export async function POST(
       .delete(pendingDateParticipantsTable)
       .where(eq(pendingDateParticipantsTable.participantId, userId));
 
-    await db
-      .update(pendingDatesTable)
-      .set({ remainingSlots: pendingDate.remainingSlots + 1 })
-      .where(eq(pendingDatesTable.pendingDateId, pendingDateId));
+    if (pendingDate.remainingSlots + 1 === pendingDate.participantCount) {
+      // delete pending date if no user has joined
+      await db
+        .delete(pendingDatesTable)
+        .where(eq(pendingDatesTable.pendingDateId, pendingDateId));
+    } else {
+      await db
+        .update(pendingDatesTable)
+        .set({ remainingSlots: pendingDate.remainingSlots + 1 })
+        .where(eq(pendingDatesTable.pendingDateId, pendingDateId));
+    }
 
     return NextResponse.json({ status: "ok" }, { status: 200 });
   } catch (error) {
