@@ -36,13 +36,13 @@ export default function chatListPage(props: {
   return (
     <div className="w-1/4 border-r-2 h-full overflow-y-scroll px-1 flex flex-col items-center">
       <h2 className="w-full text-center font-bold text-2xl py-3 bg-white">
-        我的約會
+        我的聚會
       </h2>
       <div className="flex flex-col w-full">
         {!dates.length && (
           <div className="text-center w-full text-gray-400">
             立即
-            <Link className="underline" href="/food-dates/matchmaking">
+            <Link className="underline" href="/food-dates/find-dates">
               找飯友
             </Link>
           </div>
