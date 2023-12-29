@@ -6,6 +6,8 @@ import Stack from "@mui/material/Stack";
 import React, { useEffect, useState } from "react";
 import MuiAlert, { AlertProps } from "@mui/material/Alert";
 import { Check } from "lucide-react";
+import { pusherClient } from "@/lib/pusher/client";
+import { useRouter } from "next/navigation";
 
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
   function Alert(props, ref) {
@@ -29,6 +31,7 @@ type disabledType = {
 };
 
 export default function FindDatePage() {
+  const router = useRouter();
   const [loading, setLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [hasError, setHasError] = useState<boolean>(false);
@@ -63,6 +66,26 @@ export default function FindDatePage() {
     fetchMessages();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    const channelName = `private-pending`;
+    try {
+      const channel = pusherClient.subscribe(channelName);
+      channel.bind("pending:create", (newPendingDate: pendingDateType) => {
+        setPendingDates((old) => [newPendingDate, ...old]);
+      });
+      return () => {
+        channel.unbind("pending:create");
+        pusherClient.unsubscribe(channelName);
+      };
+    } catch (error) {
+      console.error("Failed to subscribe and bind to channel");
+      console.error(error);
+    }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const handleCloseError = () => {
     setHasError(false);
   };

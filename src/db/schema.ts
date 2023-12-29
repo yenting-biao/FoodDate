@@ -405,7 +405,7 @@ export const privateMessagesRelations = relations(
 );
 
 export const notificationsTable = pgTable(
-  "users",
+  "notifications",
   {
     notificationId: uuid("notificationid")
       .primaryKey()
@@ -419,6 +419,7 @@ export const notificationsTable = pgTable(
       }),
     type: varchar("type", { length: 50 }).notNull(),
     content: text("content").notNull(),
+    redirectUrl: text("redirecturl"),
     read: boolean("read").notNull().default(false),
     createdAt: timestamp("createdat")
       .notNull()

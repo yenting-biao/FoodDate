@@ -6,13 +6,11 @@ import {
   Checkbox,
   Divider,
   FormControl,
-  FormControlLabel,
   InputLabel,
   MenuItem,
   Select,
   SelectChangeEvent,
   Snackbar,
-  TextField,
   Typography,
 } from "@mui/material";
 
@@ -132,6 +130,7 @@ export default function FoodDatePage() {
       setErrorMessage("請填寫以下欄位：" + emptyFields.join("、"));
       setHasError(true);
       setSubmitting(false);
+      return;
     }
     try {
       await fetch("/api/date/pending/create", {

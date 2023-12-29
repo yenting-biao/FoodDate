@@ -30,23 +30,24 @@ export async function POST(request: NextRequest) {
     const regex =
       /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
     if (regex.test(channelName)) {
-      // Get the document from the database
-      const dateId = channelName;
-      const [dateParticipation] = await db
-        .select()
-        .from(dateParticipantsTable)
-        .where(
-          and(
-            eq(dateParticipantsTable.dateId, dateId),
-            eq(dateParticipantsTable.participantId, session.user.id)
-          )
-        );
-      if (!dateParticipation) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      if (channelName !== session.user.id) {
+        // Get the document from the database
+        const dateId = channelName;
+        const [dateParticipation] = await db
+          .select()
+          .from(dateParticipantsTable)
+          .where(
+            and(
+              eq(dateParticipantsTable.dateId, dateId),
+              eq(dateParticipantsTable.participantId, session.user.id)
+            )
+          );
+        if (!dateParticipation) {
+          return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
       }
-    } else if (channelName !== session.user.id) {
+    } else if (channelName !== "pending")
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
 
     const userData = {
       user_id: session.user.id,

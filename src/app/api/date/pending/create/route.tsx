@@ -1,17 +1,11 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-import { eq, and, desc } from "drizzle-orm";
-
 import { db } from "@/db";
-import {
-  datesTable,
-  dateParticipantsTable,
-  privateMessagesTable,
-  usersTable,
-  pendingDatesTable,
-  pendingDateParticipantsTable,
-} from "@/db/schema";
+import { pendingDatesTable, pendingDateParticipantsTable } from "@/db/schema";
 import { auth } from "@/lib/auth";
+import Pusher from "pusher";
+import { privateEnv } from "@/lib/env/private";
+import { publicEnv } from "@/lib/env/public";
 
 type createPendingDatePayload = {
   participantCount: number;
@@ -45,12 +39,28 @@ export async function PUT(req: NextRequest) {
       })
       .returning();
 
-    await db
-      .insert(pendingDateParticipantsTable)
-      .values({
-        pendingDateId: newPendingDate.pendingDateId,
-        participantId: userId,
-      });
+    await db.insert(pendingDateParticipantsTable).values({
+      pendingDateId: newPendingDate.pendingDateId,
+      participantId: userId,
+    });
+
+    const pusher = new Pusher({
+      appId: privateEnv.PUSHER_ID,
+      key: publicEnv.NEXT_PUBLIC_PUSHER_KEY,
+      secret: privateEnv.PUSHER_SECRET,
+      cluster: publicEnv.NEXT_PUBLIC_PUSHER_CLUSTER,
+      useTLS: true,
+    });
+
+    await pusher.trigger(`private-pending`, "pending:create", {
+      pendingDateId: newPendingDate.pendingDateId,
+      participantCount,
+      remainingSlots: participantCount - 1,
+      time,
+      priceRange,
+      restaurantTypes,
+      joined: false,
+    });
 
     return NextResponse.json(
       { pendingDateId: newPendingDate.pendingDateId },
