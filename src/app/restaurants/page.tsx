@@ -71,7 +71,7 @@ type Reviewer = {
   stars: number;
   content: string;
   expense: number;
-  reviewDate: string;
+  createdAt: string;
 };
 type Review = {
   users: User;
