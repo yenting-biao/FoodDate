@@ -54,16 +54,18 @@ export default function FindDatePage() {
             }}
           >
             <div className="flex items-center gap-2">
-              <Stack direction="row" spacing={-1} className="">
-                <Avatar className="w-6 h-6" />
-                <Avatar className="w-6 h-6" />
-                <Avatar className="w-6 h-6" />
-              </Stack>
               <p className="text-xl">
                 四人團<span className="text-red-600">缺二</span>
               </p>
+              <Stack direction="row" spacing={-1} className="">
+                <Avatar className="w-[25px] h-[25px] border-2 border-white" />
+                <Avatar className="w-[25px] h-[25px] border-2 border-white" />
+                <Avatar className="w-[25px] h-[25px] border-2 border-white" />
+                <Avatar className="w-[25px] h-[25px] border-2 border-white" />
+              </Stack>
             </div>
             <div className="mt-2 text-gray-600">時間：午餐 (12:00 ~ 1:00)</div>
+            <div className="text-gray-600">價格範圍：$$$$</div>
             <div
               title="有聘請顧問, 含雜貨店, 注重健康, 拉麵洗腎幫, 泰式料理, 主打蔬食"
               className="text-gray-600 w-full text-start whitespace-nowrap overflow-hidden text-ellipsis"
