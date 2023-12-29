@@ -1,4 +1,3 @@
-//"use client"
 import React from "react";
 import { Divider } from "@mui/material";
 import { redirect } from "next/navigation";
@@ -7,6 +6,7 @@ import ProfileHeader from "./_components/ProfileHeader";
 import { publicEnv } from "@/lib/env/public";
 import { auth } from "@/lib/auth";
 import ProfileContent from "./_components/ProfileContent";
+import CoinExchange from "./_components/CoinExchange";
 
 
 export default async function ProfilePage() {
@@ -16,6 +16,7 @@ export default async function ProfilePage() {
   }
 
   const username = session?.user?.username;
+  const userId = session?.user?.id;
   const email = session?.user?.email;
   const bio = session?.user?.bio;
   const coinsLeft = session?.user?.coins;
@@ -39,7 +40,17 @@ export default async function ProfilePage() {
           email={email}
           bio={bio}
         />        
-      </div>      
+      </div>
+      <Divider 
+        sx={{ borderColor: 'gray', borderWidth: 2 }} 
+        className={`${width}`}
+      />
+      <div className={`${width}`}>
+        <CoinExchange
+          userId={userId}
+          coins={coinsLeft}
+        />     
+      </div>
     </div>}</>    
   );
 }

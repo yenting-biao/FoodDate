@@ -1,6 +1,6 @@
 "use client"
 import { useState } from "react";
-import { Alert, Avatar, Button, Dialog, DialogContent, DialogTitle, IconButton, List, ListItem, Snackbar, TextField, Tooltip, Typography, useMediaQuery, useTheme } from "@mui/material";
+import { Avatar, Button, Dialog, DialogContent, DialogTitle, IconButton, List, ListItem, Snackbar, TextField, Tooltip, Typography, useMediaQuery, useTheme } from "@mui/material";
 import PaidIcon from '@mui/icons-material/Paid';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import CloseIcon from '@mui/icons-material/Close';
@@ -8,6 +8,16 @@ import { signOut, useSession } from "next-auth/react";
 import { CldUploadWidget } from 'next-cloudinary';
 import { publicEnv } from "@/lib/env/public";
 import { useRouter } from "next/navigation";
+import MuiAlert from '@mui/material/Alert';
+import type { AlertProps } from '@mui/material/Alert';
+import React from "react";
+
+const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
+  props,
+  ref,
+) {
+  return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+});
 
 type Props = {
   username: string | undefined;
