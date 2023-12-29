@@ -1,15 +1,17 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, ne } from "drizzle-orm";
 
 import { db } from "@/db";
 import {
-  datesTable,
   dateParticipantsTable,
   privateMessagesTable,
   usersTable,
 } from "@/db/schema";
 import { auth } from "@/lib/auth";
+import Pusher from "pusher";
+import { privateEnv } from "@/lib/env/private";
+import { publicEnv } from "@/lib/env/public";
 
 export async function GET(
   req: NextRequest,
@@ -180,6 +182,19 @@ export async function PUT(
     );
   }
 
+  const participants = await db
+    .select({
+      userId: dateParticipantsTable.participantId,
+    })
+    .from(dateParticipantsTable)
+    .where(
+      and(
+        eq(dateParticipantsTable.dateId, dateId),
+        ne(dateParticipantsTable.participantId, userId)
+      )
+    )
+    .execute();
+
   const data: { content: string } = await req.json();
   const { content } = data;
   try {
@@ -187,6 +202,30 @@ export async function PUT(
       .insert(privateMessagesTable)
       .values({ dateId, senderId: userId, content })
       .returning();
+
+    const pusher = new Pusher({
+      appId: privateEnv.PUSHER_ID,
+      key: publicEnv.NEXT_PUBLIC_PUSHER_KEY,
+      secret: privateEnv.PUSHER_SECRET,
+      cluster: publicEnv.NEXT_PUBLIC_PUSHER_CLUSTER,
+      useTLS: true,
+    });
+    // Private channels are in the format: private-...
+    await pusher.trigger(`private-${dateId}`, "chat:send", {
+      messageId: newMessage.messageId,
+      senderId: userId,
+      senderUsername: session.user.username,
+      content,
+    });
+
+    const numOfParticipants = participants.length;
+    for (let i = 0; i < numOfParticipants; i++) {
+      if (participants[i].userId !== null) {
+        await pusher.trigger(`private-${participants[i].userId}`, "chat:send", {
+          senderId: userId,
+        });
+      }
+    }
 
     return NextResponse.json(
       { messageId: newMessage.messageId },

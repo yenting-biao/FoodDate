@@ -12,6 +12,14 @@ import { useParams, useRouter } from "next/navigation";
 import { Message } from "@/lib/types/db";
 import Avatar from "@mui/material/Avatar";
 import AvatarGroup from "@mui/material/AvatarGroup";
+import { pusherClient } from "@/lib/pusher/client";
+
+type PusherMessagePayload = {
+  messageId: string;
+  senderId: string;
+  senderUsername: string;
+  content: string;
+};
 
 export default function Chat() {
   const { data: session } = useSession();
@@ -68,9 +76,47 @@ export default function Chat() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [username, dateId]);
 
+  useEffect(() => {
+    if (!username || !regex.test(dateId)) return;
+    const channelName = `private-${dateId}`;
+    try {
+      const channel = pusherClient.subscribe(channelName);
+      channel.bind(
+        "chat:send",
+        ({
+          messageId,
+          senderId,
+          senderUsername,
+          content,
+        }: PusherMessagePayload) => {
+          if (senderId === userId) return;
+          setMessages((messages) => [
+            {
+              messageId,
+              senderUsername,
+              content,
+            },
+            ...messages,
+          ]);
+          router.refresh();
+        }
+      );
+      return () => {
+        channel.unbind("chat:send");
+        pusherClient.unsubscribe(channelName);
+      };
+    } catch (error) {
+      console.error("Failed to subscribe and bind to channel");
+      console.error(error);
+    }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [username, dateId]);
+
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const content = inputRef.current!.value;
+    inputRef.current!.value = "";
     if (!content) return;
     const res = await fetch(`/api/date/chat/${dateId}`, {
       method: "PUT",
@@ -83,7 +129,6 @@ export default function Chat() {
     });
     if (!res.ok) return;
     const body: { messageId: string } = await res.json();
-    inputRef.current!.value = "";
     setMessages((messages) => [
       {
         messageId: body.messageId,
@@ -160,42 +205,3 @@ export default function Chat() {
     </>
   );
 }
-
-const testMessages = [
-  {
-    messageId: "1",
-    senderUsername: "togi",
-    content:
-      "HFEFHWIOFHJIWFJIWEFJIWFJIMJHFEFHWIOFHJIWFJIWEFJIWFJIMJHFEFHWIOFHJIWFJIWEFJIWFJIMJHFEFHWIOFHJIWFJIWEFJIWFJIMJHFEFHWIOFHJIWFJIWEFJIWFJIMJHFEFHWIOFHJIWFJIWEFJIWFJIMJHFEFHWIOFHJIWFJIWEFJIWFJIMJHFEFHWIOFHJIWFJIWEFJIWFJIMJHFEFHWIOFHJIWFJIWEFJIWFJIMJ",
-  },
-  {
-    messageId: "2",
-    senderUsername: "togi",
-    content: "hello",
-  },
-  {
-    messageId: "3",
-    senderUsername: "togi",
-    content: "hello",
-  },
-  {
-    messageId: "4",
-    senderUsername: "server",
-    content: "hello",
-  },
-  {
-    messageId: "5",
-    senderUsername: "togi",
-    content: "hello",
-  },
-  {
-    messageId: "6",
-    senderUsername: "server",
-    content: "hello fewfwe few fwe fewf ewf ewf ewfew fewf ewf ewf we",
-  },
-  {
-    messageId: "7",
-    senderUsername: "server",
-    content: "hefwefewfwello",
-  },
-];
