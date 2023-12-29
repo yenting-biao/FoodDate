@@ -77,7 +77,7 @@ export async function getFinishedMission (userId: string) {
     })
     .from(userFinishedMissionsTable)
     .innerJoin(missionListsTable, eq(userFinishedMissionsTable.missionId, missionListsTable.missionId))
-    .where(eq(userFinishedMissionsTable.userId, userId))
+    .where(and(gte(missionListsTable.endAt, new Date()), lte(missionListsTable.startAt, new Date()), eq(userFinishedMissionsTable.userId, userId)))
     .orderBy(desc(userFinishedMissionsTable.finishedAt))
     .execute();
   return res;
