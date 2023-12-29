@@ -4,7 +4,7 @@ import { Alert, Avatar, Button, Dialog, DialogContent, DialogTitle, IconButton, 
 import PaidIcon from '@mui/icons-material/Paid';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import CloseIcon from '@mui/icons-material/Close';
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { CldUploadWidget } from 'next-cloudinary';
 import { publicEnv } from "@/lib/env/public";
 import { useRouter } from "next/navigation";
@@ -17,6 +17,8 @@ type Props = {
 }
 
 export default function ProfileHeader({ username, coinsLeft, width, avatarUrl }: Props) {
+  const router = useRouter();
+  const { update } = useSession();
   const handleLogout = () => {
     signOut({ callbackUrl: '/' });
   };
@@ -63,6 +65,8 @@ export default function ProfileHeader({ username, coinsLeft, width, avatarUrl }:
       setSuccessMessage("成功更改暱稱");
       setSuccessSubmit(true);
       username = newUsername;
+      update();
+      router.refresh();
     }
   }
 
@@ -114,6 +118,8 @@ export default function ProfileHeader({ username, coinsLeft, width, avatarUrl }:
                 console.log("error");
               } else {
                 setUrl(newAvatarUrl);
+                update();
+                router.refresh();
               }
             }               
           }}
