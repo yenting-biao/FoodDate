@@ -16,6 +16,7 @@ import { auth } from "@/lib/auth";
 type createPendingDatePayload = {
   participantCount: number;
   time: string;
+  priceRange: string;
   restaurantTypes: string;
 };
 
@@ -26,8 +27,12 @@ export async function PUT(req: NextRequest) {
   }
   const userId = session.user.id;
 
-  const { participantCount, time, restaurantTypes }: createPendingDatePayload =
-    await req.json();
+  const {
+    participantCount,
+    time,
+    priceRange,
+    restaurantTypes,
+  }: createPendingDatePayload = await req.json();
   try {
     const [newPendingDate] = await db
       .insert(pendingDatesTable)
@@ -35,6 +40,7 @@ export async function PUT(req: NextRequest) {
         participantCount,
         remainingSlots: participantCount - 1,
         time,
+        priceRange,
         restaurantTypes,
       })
       .returning();
