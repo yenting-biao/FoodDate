@@ -21,7 +21,6 @@ export const usersTable = pgTable(
     avatarUrl: text("avatarurl"),
     coins: integer("coins").notNull().default(0),
     bio: text("bio"),
-    lastLogin: timestamp("lastlogin").default(sql`now()`).notNull(),
   },
   (table) => ({
     userIdIndex: index("userIdIndex").on(table.userId),
