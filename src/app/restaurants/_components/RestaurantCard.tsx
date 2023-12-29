@@ -374,7 +374,7 @@ export default function RestaurantCard({ name, address, types, lat, lng, userPos
             component="img"
             height="120"
             // Use the current photo index to get the current photo URL
-            image={url[currentPhotoIndex]}
+            image={url.length > 0 && currentPhotoIndex < url.length ? url[currentPhotoIndex] : "/food1.jpeg"}
             alt="Restaurant Photo"
             onClick={() => open()}
 
