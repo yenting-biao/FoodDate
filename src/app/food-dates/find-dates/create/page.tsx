@@ -20,6 +20,7 @@ import OutlinedInput from "@mui/material/OutlinedInput";
 
 import ListItemText from "@mui/material/ListItemText";
 import MuiAlert, { AlertProps } from "@mui/material/Alert";
+import { useRouter } from "next/navigation";
 
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
   function Alert(props, ref) {
@@ -28,6 +29,7 @@ const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
 );
 
 export default function FoodDatePage() {
+  const router = useRouter();
   const currentHour = new Date().getHours() + 1;
 
   const restaurantTypes = [
@@ -119,7 +121,7 @@ export default function FoodDatePage() {
   const [hasError, setHasError] = useState<boolean>(false);
   const [emptyFields, setEmptyFields] = useState<string[]>([]);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setSubmitting(true);
     const tmpEmptyFields: string[] = [];
     if (pplCount === "") tmpEmptyFields.push("人數");
@@ -133,10 +135,19 @@ export default function FoodDatePage() {
       return;
     }
 
-    alert(
-      pplCount + ";" + selectedTime + ";" + selectedPriceRange + selectedTypes
-    );
-    setSubmitting(false);
+    await fetch("/api/date/pending/create", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        participantCount: pplCount,
+        time: selectedTime,
+        priceRange: priceRanges[parseInt(selectedPriceRange)],
+        restaurantTypes: selectedTypes.join(", "),
+      }),
+    });
+    router.push("/food-dates/find-dates");
   };
 
   const handleCloseError = () => {
