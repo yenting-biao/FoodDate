@@ -39,6 +39,7 @@ export default function Chat() {
     lng: 121.53977457666448,
   });
   const inputRef = useRef<HTMLInputElement>(null);
+  const dummyElementForScrolling = useRef<HTMLDivElement>(null);
 
   const regex =
     /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -90,6 +91,9 @@ export default function Chat() {
           content,
         }: PusherMessagePayload) => {
           if (senderId === userId) return;
+          dummyElementForScrolling.current?.scrollIntoView({
+            behavior: "smooth",
+          });
           setMessages((messages) => [
             {
               messageId,
@@ -118,6 +122,7 @@ export default function Chat() {
     const content = inputRef.current!.value;
     inputRef.current!.value = "";
     if (!content) return;
+    dummyElementForScrolling.current?.scrollIntoView({ behavior: "smooth" });
     const res = await fetch(`/api/date/chat/${dateId}`, {
       method: "PUT",
       headers: {
@@ -169,6 +174,10 @@ export default function Chat() {
               </p>
             </div>
             <div className="px-3 flex flex-col-reverse justify-start gap-2 h-full overflow-y-scroll">
+              <div
+                style={{ float: "left", clear: "both" }}
+                ref={dummyElementForScrolling}
+              ></div>
               {messages.map((m, index) => (
                 <MessageContainer
                   key={m.messageId}
