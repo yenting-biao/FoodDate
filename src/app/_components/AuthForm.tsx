@@ -27,8 +27,8 @@ function AuthForm(props: Props) {
             email,
             username,
             password,
-            callbackUrl: `${process.env.NEXT_PUBLIC_BASE_URL}`,
-        })
+            callbackUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/profile`,
+        },{mode: isSignUp})
     };
 
     return (
@@ -53,6 +53,10 @@ function AuthForm(props: Props) {
                     </p>}
 
                 <AuthInput label="密碼" type="password" value={password} setValue={setPassword} />
+                {!isPasswordValid && password.length > 0 &&
+                    <p className="text-red-500 text-sm">
+                        密碼長度介於8-20，包含大小寫英數字!
+                    </p>}
                 {isSignUp && (
                     <AuthInput
                         label="確認密碼"
@@ -108,7 +112,7 @@ function AuthForm(props: Props) {
                         登入
                     </button>
                 )}
-                 {!!props.error&&<p className="bg-red-100 text-red-600 text-center p-2">帳號或密碼錯誤，請重試！</p>}
+                 {!!props.error&&!isSignUp&&<p className="bg-red-100 text-red-600 text-center p-2">帳密錯誤或已被註冊，請重試！</p>}
             </form>
             <div className="flex items-center justify-center mt-4">
                 {/* Additional content */}
