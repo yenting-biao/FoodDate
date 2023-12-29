@@ -205,7 +205,79 @@ export default function RestaurantCard({ name, address, types, lat, lng, userPos
   const [stars, setStars] = useState(5);
   const [reviewArray, setReviewArray] = useState<Review[]>(reviews);
   const [url, setUrl] = useState(photoReference);
+  const [isLiked,setIsLiked] = useState<boolean>();
   const router = useRouter();
+  useEffect(() => {
+    const checkTag = async () => {
+        try {
+            const response = await fetch('/api/tag/checkTags', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  userId: session?.user?.id, 
+                  placeId: placeId,
+                  tagName:'like' }),
+            });
+            if (response.ok) {
+                const data = await response.json();
+                //console.log(data.message)
+                setIsLiked(data.message==='true');
+            }
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+    };
+
+    checkTag();
+}, []);
+  const handleLike = async() => {
+    if (!isLiked){
+    try {
+      const res = await fetch('api/tag/useTags', {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: session?.user?.id,
+          placeId: placeId,
+          tagName: 'like'
+        })
+      });
+      if (!res.ok){
+        return;
+      }
+      setIsLiked(true);
+    }catch(error){
+      return;
+    }}
+    else{
+      const res = await fetch('api/tag/useTags', {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: session?.user?.id,
+          placeId: placeId,
+          tagName: 'like'
+        })
+      });
+      if (!res.ok){
+        return;
+      }
+      setIsLiked(false);
+    }
+  }
+
+
+
+
+
+
+
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setContent(event.target.value);
   };
@@ -438,8 +510,9 @@ export default function RestaurantCard({ name, address, types, lat, lng, userPos
         </CardContent>
         <CardActions disableSpacing>
           <Tooltip title="加到最愛" placement="top">
-            <IconButton aria-label="add to favorites">
-              <FavoriteIcon />
+            <IconButton  style={{ color: isLiked ? 'red' : 'gray' }} aria-label="add to favorites" onClick={handleLike}>
+              <FavoriteIcon
+              />
             </IconButton>
           </Tooltip>
           <Tooltip title="分享" placement="top">

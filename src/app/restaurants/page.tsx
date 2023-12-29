@@ -38,6 +38,7 @@ import SearchBar from "./_components/SearchBar";
 import RestaurantCard from "./_components/RestaurantCard";
 import { grey, red } from "@mui/material/colors";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 const Wheel = dynamic(
   () => import('react-custom-roulette').then(mod => mod.Wheel),
@@ -77,6 +78,9 @@ type Review = {
   users: User;
   reviews: Reviewer;
 };
+type stringsOfPlaces = {
+  placeId: string;
+}
 export default function RestaurantPage() {
   const [position, setPosition] = useState({
     lat: 25.01834354450372,
@@ -100,7 +104,8 @@ export default function RestaurantPage() {
   const [selectRestaurantPlaceId, setSelectRestaurantPlaceId] = useState("");
   const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant>();
   const [selectImageUrls, setSelectImageUrls] = useState([]);
-  const initialized = useRef(false)
+  const initialized = useRef(false);
+  const {data: session, status} = useSession();
   useEffect(() => {
 
     const fetchRestaurants = async () => {
@@ -115,7 +120,7 @@ export default function RestaurantPage() {
 
     fetchRestaurants();
 
-  }, [restaurants]);
+  }, []);
   //useEffect(() => {
   //  console.log('Restaurants updated:', restaurants);
   //}, [restaurants]);
@@ -176,7 +181,7 @@ export default function RestaurantPage() {
 
   const [showAllRes, setAllRes] = useState(false);
   const [showOnlySel, setOnlySel] = useState(true);
-  const [showMyFav, setMyFav] = useState(false);
+  const [showTags, setShowTags] = useState(false);
   const [isSetting, setIsSetting] = useState(false);
   const actions = [
     { icon: <SwapHorizontalCircleIcon />, name: "幫抽要吃啥 Food Lottery", onClick: () => setShowRoulette(true) },
@@ -184,7 +189,7 @@ export default function RestaurantPage() {
     ...isSetting ? [
       { icon: <DensitySmallIcon />, name: "顯示全部餐廳 Show All Restaurants", onClick: () => handleShowAllClick() },
       { icon: <NavigationIcon />, name: "顯示精選餐廳 Show Only Selected", onClick: () => handleShowOnlySel() },
-      { icon: <FavoriteIcon />, name: "顯示我的最愛 Show Your Favourite", onClick: () => handleShowMyFav() },
+      { icon: <FavoriteIcon />, name: "顯示我的最愛 Show Your Favourite", onClick: () => handleShowTags() },
     ] : []
   ];
   const handleNewImage = (newImageUrl: string, placeId: string) => {
@@ -201,17 +206,18 @@ export default function RestaurantPage() {
   const handleShowAllClick = () => {
     setAllRes(true);
     setOnlySel(false);
-    setMyFav(false);
+    setShowTags(false);
   }
   const handleShowOnlySel = () => {
     setAllRes(false);
     setOnlySel(true);
-    setMyFav(false);
+    setShowTags(false);
   }
-  const handleShowMyFav = () => {
+  const handleShowTags = () => {
+    if (showTags){
     setAllRes(false);
     setOnlySel(false);
-    setMyFav(true);
+    setShowTags(true);}
   }
 
   const blueMarkerIcon = {
@@ -287,10 +293,55 @@ export default function RestaurantPage() {
     setSelectRestaurant(true);
   };
 
+  const [taggedRestaurants, setTaggedRestaurants] = useState<stringsOfPlaces[]>();
+
+
+  const fetchTagInfo = async () => {
+    const taggedPlaces = new Set();/*
+    for (const restaurant of restaurants) {
+      const response = await fetch('/api/tag/checkTags', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: session?.user?.id,
+          placeId: restaurant.placeId,
+          tagName: 'like',
+        }),
+      });
+      const data = await response.json();
+      if (data.message === "true") {
+        taggedPlaces.add(restaurant.placeId);
+      }
+    }*/
+    const response = await fetch('/api/tag/countTags', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        userId: session?.user?.id,
+        tagName: 'like',
+      }),
+    });
+    const data = await response.json();
+    //console.log(data[0].placeId);
+    setTaggedRestaurants(data);
+    //console.log(taggedRestaurants)
+  };
+  useEffect(() => {
+    if (showTags) {
+      fetchTagInfo();
+    }
+  }, [showTags]);
+
+
+
   const handleMapClick = async (event: any) => {
     // TODO: fix event type
     const placeId = event.detail.placeId;
-    console.log("placeId", placeId);
+    //console.log("placeId", placeId);
     if (!placeId) return;
 
     try { // The API to get place details
@@ -298,7 +349,7 @@ export default function RestaurantPage() {
         `https://places.googleapis.com/v1/places/${placeId}?fields=id,displayName,formattedAddress,types&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`
       );
       const data = await res.json();
-      console.log("data", data);
+      //console.log("data", data);
       /* 
         {
           displayName: {
@@ -444,8 +495,7 @@ export default function RestaurantPage() {
                     }
                   }
                   const isFullDesign = index < threshold;
-
-                  return (((isFullDesign && showOnlySel) || showAllRes) &&
+                  return ((isFullDesign && showOnlySel) || showAllRes || (showTags &&taggedRestaurants&& taggedRestaurants.some(taggedRestaurant => taggedRestaurant.placeId === restaurant.placeId))) &&
                     <AdvancedMarker
                       key={restaurant.placeId}
                       position={{ lat: restaurant.latitude, lng: restaurant.longitude }}
@@ -479,7 +529,7 @@ export default function RestaurantPage() {
                         }}>{truncatedName}</div>
                       </div>
                     </AdvancedMarker>
-                  );
+                  
                 }
                 return null;
               })}
