@@ -12,6 +12,7 @@ import {
   MenuItem,
   ButtonBase,
   ListItemIcon,
+  Typography,
 } from "@mui/material";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import AppsRoundedIcon from "@mui/icons-material/AppsRounded";
@@ -73,6 +74,7 @@ export default function Header() {
             width={36}
             className="ml-2"
           />
+          {isAdmin && <Typography variant="h5" className="ml-5 text-red-500 font-semibold">Admin</Typography>}
         </ButtonBase>
         <div className="flex-grow">{/* any other things */}</div>
         <div className="flex items-center gap-3 p-3">
