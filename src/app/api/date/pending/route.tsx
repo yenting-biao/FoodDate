@@ -50,7 +50,6 @@ export async function GET(req: NextRequest) {
         )
       )
       .execute();
-    console.log(pendingDates);
 
     const pendingDatesWithParticipationStatus = pendingDates.map(
       (pendingDate) => {
