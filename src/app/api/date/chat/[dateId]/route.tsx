@@ -210,7 +210,7 @@ export async function PUT(
       cluster: publicEnv.NEXT_PUBLIC_PUSHER_CLUSTER,
       useTLS: true,
     });
-    // Private channels are in the format: private-...
+
     await pusher.trigger(`private-${dateId}`, "chat:send", {
       messageId: newMessage.messageId,
       senderId: userId,
@@ -222,7 +222,10 @@ export async function PUT(
     for (let i = 0; i < numOfParticipants; i++) {
       if (participants[i].userId !== null) {
         await pusher.trigger(`private-${participants[i].userId}`, "chat:send", {
+          dateId,
           senderId: userId,
+          senderUsername: session.user.username,
+          content,
         });
       }
     }
