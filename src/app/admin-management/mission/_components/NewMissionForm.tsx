@@ -70,7 +70,7 @@ export default function NewMissionForm ({ placeId, restaurantName, restaurantAdd
     const body = {
       missionName,
       missionDescription,
-      relatedPlaceId: relatedPlaceId === "" ? undefined : relatedPlaceId,
+      relatedPlaceId: relatedPlaceId === "" ? undefined : relatedPlaceId.trim(),
       prize: prize,
       startAt: startAt.toISOString(),
       endAt: endAt.toISOString(),

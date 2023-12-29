@@ -8,6 +8,7 @@ const publicEnvSchema = z.object({
   NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET: z.string(),
   NEXT_PUBLIC_PUSHER_KEY: z.string(),
   NEXT_PUBLIC_PUSHER_CLUSTER: z.string(),
+  NEXT_PUBLIC_VERIFY_DISTANCE_BASE: z.number(),
 });
 
 type PublicEnv = z.infer<typeof publicEnvSchema>;
@@ -22,6 +23,7 @@ export const publicEnv: PublicEnv = {
     process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET!,
   NEXT_PUBLIC_PUSHER_KEY: process.env.NEXT_PUBLIC_PUSHER_KEY!,
   NEXT_PUBLIC_PUSHER_CLUSTER: process.env.NEXT_PUBLIC_PUSHER_CLUSTER!,
+  NEXT_PUBLIC_VERIFY_DISTANCE_BASE: Number(process.env.NEXT_PUBLIC_VERIFY_DISTANCE_BASE!),
 };
 
 publicEnvSchema.parse(publicEnv);
