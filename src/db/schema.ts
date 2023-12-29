@@ -9,6 +9,7 @@ import {
   integer,
   primaryKey,
   text,
+  boolean,
 } from "drizzle-orm/pg-core";
 
 export const usersTable = pgTable(
@@ -33,6 +34,33 @@ export const usersRelations = relations(usersTable, ({ many }) => ({
   dateParticipantsTable: many(dateParticipantsTable),
   privateMessagesTable: many(privateMessagesTable),
 }));
+
+export const missionListsTable = pgTable("mission_lists", {
+  missionId: uuid("id").primaryKey().notNull().defaultRandom(),
+  missionName: varchar("missionname", { length: 100 }).notNull(),
+  missionDescription: text("missiondescription"),
+  relatedPlaceId: varchar("related_placeid", { length: 300 })
+    // This is optional. If this mission does not include a restaurant, then it is null
+    .references(() => restaurantsTable.placeId, {
+      onDelete: "cascade",
+      onUpdate: "cascade",
+    }),
+  prize: integer("prize").notNull(),
+  startAt: timestamp("start_at").notNull(),
+  endAt: timestamp("end_at").notNull(),
+});
+
+export const userFinishedMissionsTable = pgTable("user_finished_missions", {
+  userId: uuid("userid").references(() => usersTable.userId, {
+    onDelete: "cascade",
+    onUpdate: "cascade",
+  }),
+  missionId: uuid("missionid").references(() => missionListsTable.missionId, {
+    onDelete: "cascade",
+    onUpdate: "cascade",
+  }),
+  finishedAt: timestamp("finished_at").defaultNow().notNull(),
+});
 
 export const restaurantsTable = pgTable(
   "restaurants",
@@ -228,6 +256,43 @@ export const taggedRestaurantsRelations = relations(
       fields: [taggedRestaurantsTable.placeId],
       references: [restaurantsTable.placeId],
     }),
+  })
+);
+
+export const pendingDatesTable = pgTable(
+  "pendingDates",
+  {
+    pendingDateId: uuid("pendingdateid").primaryKey().notNull().defaultRandom(),
+    participantCount: integer("participantcount").notNull(),
+    remainingSlots: integer("remainingslots").notNull(),
+    time: varchar("time", { length: 50 }).notNull(),
+    priceRange: varchar("pricerange", { length: 100 }).notNull(),
+    restaurantTypes: text("restaurantTypes").notNull(),
+  },
+  (table) => ({
+    pendingDateIdIndex: index("pendingDateIdIndex").on(table.pendingDateId),
+  })
+);
+
+export const pendingDateParticipantsTable = pgTable(
+  "pendingdateparticipants",
+  {
+    displayId: uuid("displayid").primaryKey().notNull().defaultRandom(),
+    pendingDateId: uuid("pendingdateid")
+      .notNull()
+      .references(() => pendingDatesTable.pendingDateId, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      }),
+    participantId: uuid("participantid")
+      .notNull()
+      .references(() => usersTable.userId, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      }),
+  },
+  (table) => ({
+    pendingDateIdIndex: index("pendingDateIdIndex").on(table.pendingDateId),
   })
 );
 
