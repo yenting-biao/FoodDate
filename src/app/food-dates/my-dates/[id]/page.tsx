@@ -12,6 +12,14 @@ import { useParams, useRouter } from "next/navigation";
 import { Message } from "@/lib/types/db";
 import Avatar from "@mui/material/Avatar";
 import AvatarGroup from "@mui/material/AvatarGroup";
+import { pusherClient } from "@/lib/pusher/client";
+
+type PusherMessagePayload = {
+  messageId: string;
+  senderId: string;
+  senderUsername: string;
+  content: string;
+};
 
 export default function Chat() {
   const { data: session } = useSession();
@@ -31,6 +39,7 @@ export default function Chat() {
     lng: 121.53977457666448,
   });
   const inputRef = useRef<HTMLInputElement>(null);
+  const dummyElementForScrolling = useRef<HTMLDivElement>(null);
 
   const regex =
     /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -68,10 +77,52 @@ export default function Chat() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [username, dateId]);
 
+  useEffect(() => {
+    if (!username || !regex.test(dateId)) return;
+    const channelName = `private-${dateId}`;
+    try {
+      const channel = pusherClient.subscribe(channelName);
+      channel.bind(
+        "chat:send",
+        ({
+          messageId,
+          senderId,
+          senderUsername,
+          content,
+        }: PusherMessagePayload) => {
+          if (senderId === userId) return;
+          dummyElementForScrolling.current?.scrollIntoView({
+            behavior: "smooth",
+          });
+          setMessages((messages) => [
+            {
+              messageId,
+              senderUsername,
+              content,
+            },
+            ...messages,
+          ]);
+          router.refresh();
+        }
+      );
+      return () => {
+        channel.unbind("chat:send");
+        pusherClient.unsubscribe(channelName);
+      };
+    } catch (error) {
+      console.error("Failed to subscribe and bind to channel");
+      console.error(error);
+    }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [username, dateId]);
+
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const content = inputRef.current!.value;
+    inputRef.current!.value = "";
     if (!content) return;
+    dummyElementForScrolling.current?.scrollIntoView({ behavior: "smooth" });
     const res = await fetch(`/api/date/chat/${dateId}`, {
       method: "PUT",
       headers: {
@@ -83,7 +134,6 @@ export default function Chat() {
     });
     if (!res.ok) return;
     const body: { messageId: string } = await res.json();
-    inputRef.current!.value = "";
     setMessages((messages) => [
       {
         messageId: body.messageId,
@@ -124,6 +174,10 @@ export default function Chat() {
               </p>
             </div>
             <div className="px-3 flex flex-col-reverse justify-start gap-2 h-full overflow-y-scroll">
+              <div
+                style={{ float: "left", clear: "both" }}
+                ref={dummyElementForScrolling}
+              ></div>
               {messages.map((m, index) => (
                 <MessageContainer
                   key={m.messageId}
@@ -160,42 +214,3 @@ export default function Chat() {
     </>
   );
 }
-
-const testMessages = [
-  {
-    messageId: "1",
-    senderUsername: "togi",
-    content:
-      "HFEFHWIOFHJIWFJIWEFJIWFJIMJHFEFHWIOFHJIWFJIWEFJIWFJIMJHFEFHWIOFHJIWFJIWEFJIWFJIMJHFEFHWIOFHJIWFJIWEFJIWFJIMJHFEFHWIOFHJIWFJIWEFJIWFJIMJHFEFHWIOFHJIWFJIWEFJIWFJIMJHFEFHWIOFHJIWFJIWEFJIWFJIMJHFEFHWIOFHJIWFJIWEFJIWFJIMJHFEFHWIOFHJIWFJIWEFJIWFJIMJ",
-  },
-  {
-    messageId: "2",
-    senderUsername: "togi",
-    content: "hello",
-  },
-  {
-    messageId: "3",
-    senderUsername: "togi",
-    content: "hello",
-  },
-  {
-    messageId: "4",
-    senderUsername: "server",
-    content: "hello",
-  },
-  {
-    messageId: "5",
-    senderUsername: "togi",
-    content: "hello",
-  },
-  {
-    messageId: "6",
-    senderUsername: "server",
-    content: "hello fewfwe few fwe fewf ewf ewf ewfew fewf ewf ewf we",
-  },
-  {
-    messageId: "7",
-    senderUsername: "server",
-    content: "hefwefewfwello",
-  },
-];

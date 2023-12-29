@@ -16,12 +16,7 @@ function Urlify(message: string) {
   return (
     <Linkify
       componentDecorator={(decoratedHref, decoratedText, key) => (
-        <a
-          target="blank"
-          href={decoratedHref}
-          key={key}
-          className="hover:underline"
-        >
+        <a target="blank" href={decoratedHref} key={key} className="underline">
           {decoratedText}
         </a>
       )}

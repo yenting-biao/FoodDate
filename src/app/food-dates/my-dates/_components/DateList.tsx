@@ -5,8 +5,19 @@ import { useParams, usePathname, useRouter } from "next/navigation";
 import { Message } from "@/lib/types/db";
 import Link from "next/link";
 import { datePreviewType } from "../layout";
+import { pusherClient } from "@/lib/pusher/client";
+import { useSession } from "next-auth/react";
+
+type PusherPreviewPayload = {
+  dateId: string;
+  senderId: string;
+  senderUsername: string;
+  content: string;
+};
 
 export default function chatListPage(props: { dates: datePreviewType[] }) {
+  const { data: session } = useSession();
+  const userId = session?.user?.id;
   const [loading, setLoading] = useState<boolean>(false);
   const pathname = usePathname();
   const router = useRouter();
@@ -14,7 +25,6 @@ export default function chatListPage(props: { dates: datePreviewType[] }) {
   const currDateId = Array.isArray(id) ? id[0] : id;
   const [dates, setDates] = useState<datePreviewType[]>(props.dates);
   const [selectedDateId, setSelectedDateId] = useState<string>("");
-  const chineseNumbers = ["一", "二", "三", "四"];
 
   useEffect(() => {
     if (pathname === "/chat") setSelectedDateId("");
@@ -24,7 +34,44 @@ export default function chatListPage(props: { dates: datePreviewType[] }) {
 
   useEffect(() => {
     setDates(props.dates);
-  }, [props.dates.length]);
+  }, [props.dates]);
+
+  useEffect(() => {
+    const channelName = `private-${userId}`;
+    try {
+      const channel = pusherClient.subscribe(channelName);
+      channel.bind(
+        "chat:send",
+        ({
+          dateId,
+          senderId,
+          senderUsername,
+          content,
+        }: PusherPreviewPayload) => {
+          if (senderId === userId) return;
+          setDates((dates) =>
+            dates.map((element) => {
+              if (element.dateId !== dateId) return element;
+              return {
+                ...element,
+                lastMessage: senderUsername + ": " + content,
+              };
+            })
+          );
+          router.refresh();
+        }
+      );
+      return () => {
+        channel.unbind("chat:send");
+        pusherClient.unsubscribe(channelName);
+      };
+    } catch (error) {
+      console.error("Failed to subscribe and bind to channel");
+      console.error(error);
+    }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="w-1/4 border-r-2 h-full overflow-y-scroll px-1 flex flex-col items-center">
@@ -47,6 +94,7 @@ export default function chatListPage(props: { dates: datePreviewType[] }) {
             title={date.title}
             lastMessage={date.lastMessage}
             avatarUrls={date.avatarUrls}
+            selected={date.dateId === selectedDateId}
           />
         ))}
       </div>
