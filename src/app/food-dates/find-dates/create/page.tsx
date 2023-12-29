@@ -88,10 +88,10 @@ export default function FoodDatePage() {
     "表演藝術中心",
   ];
   const priceRanges = [
-    "$ （200元以內）",
-    "$$ （400元以內）",
-    "$$$ （600元以內）",
-    "$$$$ （600元以上）",
+    "$（200元以內）",
+    "$$（400元以內）",
+    "$$$（600元以內）",
+    "$$$$（600元以上）",
   ];
 
   const [pplCount, setPplCount] = useState<string>("");
@@ -115,26 +115,27 @@ export default function FoodDatePage() {
     setSelectedTypes(typeof value === "string" ? value.split(",") : value);
   };
 
-  const countdownValue = 3;
   const [submitting, setSubmitting] = useState<boolean>(false);
-  const [countdown, setCountdown] = useState<number>(countdownValue);
-  const [hasSubmit, setHasSubmit] = useState<boolean>(false);
-  const [dots, setDots] = useState(0);
   const [hasError, setHasError] = useState<boolean>(false);
   const [emptyFields, setEmptyFields] = useState<string[]>([]);
 
   const handleSubmit = () => {
+    setSubmitting(true);
     const tmpEmptyFields: string[] = [];
     if (pplCount === "") tmpEmptyFields.push("人數");
     if (selectedTime === "") tmpEmptyFields.push("時間");
     if (selectedPriceRange === "") tmpEmptyFields.push("價格範圍");
     if (selectedTypes.length === 0) tmpEmptyFields.push("餐廳類型");
-
     setEmptyFields(tmpEmptyFields);
     setHasError(tmpEmptyFields.length > 0);
-    if (tmpEmptyFields.length === 0) {
-      setSubmitting(true);
+    if (tmpEmptyFields.length > 0) {
+      setSubmitting(false);
+      return;
     }
+
+    alert(
+      pplCount + ";" + selectedTime + ";" + selectedPriceRange + selectedTypes
+    );
   };
 
   const handleCloseError = () => {
@@ -166,7 +167,7 @@ export default function FoodDatePage() {
               }
               disabled={submitting}
             >
-              {Array.from({ length: 4 }, (_, i) => i + 1).map((count) => (
+              {[2, 3, 4].map((count) => (
                 <MenuItem key={count} value={count}>
                   {count} 人
                 </MenuItem>
@@ -174,22 +175,30 @@ export default function FoodDatePage() {
             </Select>
           </FormControl>
           <FormControl fullWidth>
-            <InputLabel id="time-label">選擇時間（今天）</InputLabel>
+            <InputLabel id="time-label">選擇時間（24小時內）</InputLabel>
             <Select
               value={selectedTime}
               labelId="time-label"
-              label="選擇時間（今天）"
+              label="選擇時間（24小時內）"
               onChange={(data) => setSelectedTime(data.target.value)}
               disabled={submitting}
               MenuProps={MenuProps}
             >
-              {Array.from({ length: 13 }, (_, i) => currentHour + i).map(
-                (hour) => (
-                  <MenuItem key={hour} value={hour}>
-                    {hour % 24}:00 ~ {(hour + 1) % 24}:00
-                  </MenuItem>
-                )
-              )}
+              <MenuItem value={"早上（6:00-11:00）"}>
+                早上（6:00-11:00）
+              </MenuItem>
+              <MenuItem value={"中午（11:00-13:00）"}>
+                中午（11:00-13:00）
+              </MenuItem>
+              <MenuItem value={"下午（13:00-17:00）"}>
+                下午（13:00-17:00）
+              </MenuItem>
+              <MenuItem key={1} value={"晚上（17:00-20:00）"}>
+                晚上（17:00-20:00）
+              </MenuItem>
+              <MenuItem key={1} value={"半夜（20:00-1:00）"}>
+                半夜（20:00-1:00）
+              </MenuItem>
             </Select>
           </FormControl>
           <FormControl fullWidth>

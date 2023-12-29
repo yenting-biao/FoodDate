@@ -1,4 +1,5 @@
-import { Divider, Typography } from "@mui/material";
+"use client";
+import { Divider, Tooltip, Typography } from "@mui/material";
 import Link from "next/link";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
@@ -6,8 +7,13 @@ import ListItemText from "@mui/material/ListItemText";
 import ListItemAvatar from "@mui/material/ListItemAvatar";
 import Avatar from "@mui/material/Avatar";
 import * as React from "react";
+import Stack from "@mui/material/Stack";
 
 export default function FindDatePage() {
+  async function joinDate(dateId: string) {
+    //TODO:
+  }
+
   return (
     <div className="flex flex-col items-center w-full h-full">
       <Typography variant="h4" className="text-center mt-7">
@@ -23,73 +29,49 @@ export default function FindDatePage() {
           新增自己的約會
         </Link>
       </Typography>
-      <List sx={{ width: "100%", maxWidth: 500, bgcolor: "background.paper" }}>
-        <ListItem alignItems="flex-start">
-          <ListItemAvatar>
-            <Avatar alt="Remy Sharp" src="/static/images/avatar/1.jpg" />
-          </ListItemAvatar>
-          <ListItemText
-            primary="Brunch this weekend?"
-            secondary={
-              <React.Fragment>
-                <Typography
-                  sx={{ display: "inline" }}
-                  component="span"
-                  variant="body2"
-                  color="text.primary"
-                >
-                  Ali Connors
-                </Typography>
-                {" — I'll be in your neighborhood doing errands this…"}
-              </React.Fragment>
-            }
-          />
-        </ListItem>
-        <Divider component="li" />
-        <ListItem alignItems="flex-start">
-          <ListItemAvatar>
-            <Avatar alt="Travis Howard" src="/static/images/avatar/2.jpg" />
-          </ListItemAvatar>
-          <ListItemText
-            primary="Summer BBQ"
-            secondary={
-              <React.Fragment>
-                <Typography
-                  sx={{ display: "inline" }}
-                  component="span"
-                  variant="body2"
-                  color="text.primary"
-                >
-                  to Scott, Alex, Jennifer
-                </Typography>
-                {" — Wish I could come, but I'm out of town this…"}
-              </React.Fragment>
-            }
-          />
-        </ListItem>
-        <Divider component="li" />
-        <ListItem alignItems="flex-start">
-          <ListItemAvatar>
-            <Avatar alt="Cindy Baker" src="/static/images/avatar/3.jpg" />
-          </ListItemAvatar>
-          <ListItemText
-            primary="Oui Oui"
-            secondary={
-              <React.Fragment>
-                <Typography
-                  sx={{ display: "inline" }}
-                  component="span"
-                  variant="body2"
-                  color="text.primary"
-                >
-                  Sandra Adams
-                </Typography>
-                {" — Do you have Paris recommendations? Have you ever…"}
-              </React.Fragment>
-            }
-          />
-        </ListItem>
-      </List>
+      <div className="w-full max-w-[500px] mt-5">
+        <Tooltip
+          arrow
+          title="加入約會"
+          slotProps={{
+            popper: {
+              modifiers: [
+                {
+                  name: "offset",
+                  options: {
+                    offset: [0, -14],
+                  },
+                },
+              ],
+            },
+          }}
+        >
+          <button
+            className="active:bg-gray-200 hover:bg-gray-100 rounded-lg w-full px-2 py-2 flex flex-col items-start"
+            onClick={(event) => {
+              event.preventDefault();
+              joinDate("hello");
+            }}
+          >
+            <div className="flex items-center gap-2">
+              <Stack direction="row" spacing={-1} className="">
+                <Avatar className="w-6 h-6" />
+                <Avatar className="w-6 h-6" />
+                <Avatar className="w-6 h-6" />
+              </Stack>
+              <p className="text-xl">四人團缺二</p>
+            </div>
+            <div className="mt-2 text-gray-600">時間：午餐 (12:00 ~ 1:00)</div>
+            <div
+              title="有聘請顧問, 含雜貨店, 注重健康, 拉麵洗腎幫, 泰式料理, 主打蔬食"
+              className="text-gray-600 w-full text-start whitespace-nowrap overflow-hidden text-ellipsis"
+            >
+              想去的餐廳類型："有聘請顧問", "含雜貨店", "注重健康",
+              "拉麵洗腎幫", "泰式料理", "主打蔬食",
+            </div>
+          </button>
+        </Tooltip>
+      </div>
     </div>
   );
 }
