@@ -8,3 +8,7 @@ export const missionSchema = z.object({
   startAt: z.date().or(z.string()),
   endAt: z.date().or(z.string()),
 });
+
+export const deleteMissionSchema = z.object({
+  missionId: z.string(),
+});

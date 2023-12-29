@@ -8,7 +8,13 @@ import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import type { Dayjs } from "dayjs";
 import { useRouter } from "next/navigation";
 
-export default function NewMissionForm () {
+type Props = {
+  placeId: string;
+  restaurantName: string;
+  restaurantAddress: string;
+}
+
+export default function NewMissionForm ({ placeId, restaurantName, restaurantAddress}: Props) {
   const router = useRouter();
   const [missionName, setMissionName] = useState<string>("");
   const [missionDescription, setMissionDescription] = useState<string>("");
@@ -102,7 +108,7 @@ export default function NewMissionForm () {
   
   return (
     <div className="p-8 border border-gray-600 flex flex-col justify-between h-full">
-      <div className="flex gap-2 w-full items-center justify-between">
+      <div className="grid sm:grid-cols-4 xs:grid-cols-1 gap-2 w-full items-center justify-between">
         <TextField 
           name="missionName" 
           label="任務名稱" 
@@ -150,10 +156,17 @@ export default function NewMissionForm () {
           />
         </LocalizationProvider>
       </div>
-      <div className="self-end mt-4">
-        <Button variant="contained" className="bg-blue-500" onClick={handleSubmit} disabled={loading}>
-          送出
-        </Button>
+      <div className="flex items-center gap-3 mt-4">
+        <div className="flex-grow">
+          不知道要選哪間餐廳當任務嗎？參考這間吧：<br/>
+          <span className="underline">{restaurantName} ({restaurantAddress}) {placeId}</span>
+        </div>
+        <div className="w-fit">
+          <Button variant="contained" className="bg-blue-500" onClick={handleSubmit} disabled={loading}>
+            送出
+          </Button>
+        </div>
+        
       </div>  
       <Snackbar
         open={hasError}
