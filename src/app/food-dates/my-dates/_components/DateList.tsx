@@ -9,7 +9,7 @@ export default function chatListPage(props: {
   dates: {
     dateId: string;
     title: string;
-    lastMessage: string;
+    lastMessage: string | null;
   }[];
 }) {
   const [loading, setLoading] = useState<boolean>(false);
@@ -21,7 +21,7 @@ export default function chatListPage(props: {
     {
       dateId: string;
       title: string;
-      lastMessage: string;
+      lastMessage: string | null;
     }[]
   >(props.dates);
   const [selectedDateId, setSelectedDateId] = useState<string>("");
@@ -32,6 +32,10 @@ export default function chatListPage(props: {
     else setSelectedDateId(currDateId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router, pathname]);
+
+  useEffect(() => {
+    setDates(props.dates);
+  }, [props.dates.length]);
 
   return (
     <div className="w-1/4 border-r-2 h-full overflow-y-scroll px-1 flex flex-col items-center">

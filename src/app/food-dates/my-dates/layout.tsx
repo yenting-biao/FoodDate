@@ -11,6 +11,52 @@ import {
 import { desc, eq } from "drizzle-orm";
 import { db } from "@/db";
 
+const chineseNumbers = ["一", "二", "三", "四"];
+
+async function getDateDetails(dateId: string) {
+  const participantUsernamesRet = await db
+    .select({
+      username: usersTable.username,
+    })
+    .from(dateParticipantsTable)
+    .leftJoin(
+      usersTable,
+      eq(dateParticipantsTable.participantId, usersTable.userId)
+    )
+    .where(eq(dateParticipantsTable.dateId, dateId))
+    .execute();
+
+  const participantUsernames = participantUsernamesRet.map(
+    (obj) => obj.username
+  );
+  const participantCount = participantUsernames.length;
+  let userList = "";
+  for (let i = 0; i < participantCount - 1; i++)
+    userList += (participantUsernames[i] ?? "[已刪除]") + ", ";
+  userList += participantUsernames[participantCount - 1];
+  const title = chineseNumbers[participantCount - 1] + "人團：" + userList;
+
+  const [lastMessage] = await db
+    .select({
+      senderUsername: usersTable.username,
+      content: privateMessagesTable.content,
+    })
+    .from(privateMessagesTable)
+    .where(eq(privateMessagesTable.dateId, dateId))
+    .leftJoin(usersTable, eq(usersTable.userId, privateMessagesTable.senderId))
+    .orderBy(desc(privateMessagesTable.sentAt))
+    .limit(1)
+    .execute();
+
+  return {
+    dateId,
+    title,
+    lastMessage: !lastMessage
+      ? null
+      : (lastMessage.senderUsername ?? "[已刪除]") + ": " + lastMessage.content,
+  };
+}
+
 export default async function ChatsPage({
   children,
 }: {
@@ -21,7 +67,6 @@ export default async function ChatsPage({
     redirect(publicEnv.NEXT_PUBLIC_BASE_URL + "/login");
   }
   const userId = session.user.id;
-  const chineseNumbers = ["一", "二", "三", "四"];
 
   const dateIdsRet = await db
     .select({
@@ -35,56 +80,17 @@ export default async function ChatsPage({
 
   const dateIds = dateIdsRet.map((obj) => obj.dateId);
 
-  let dates: {
+  const dates: {
     dateId: string;
     title: string;
-    lastMessage: string;
+    lastMessage: string | null;
   }[] = [];
-  dateIds.forEach(async (dateId) => {
-    const participantUsernamesRet = await db
-      .select({
-        username: usersTable.userId,
-      })
-      .from(dateParticipantsTable)
-      .leftJoin(
-        usersTable,
-        eq(dateParticipantsTable.participantId, usersTable.userId)
-      )
-      .where(eq(dateParticipantsTable.dateId, dateId))
-      .execute();
 
-    const participantUsernames = participantUsernamesRet.map(
-      (obj) => obj.username
-    );
-    const participantCount = participantUsernames.length;
-    let userList = "";
-    for (let i = 0; i < participantCount - 1; i++)
-      userList += (participantUsernames[i] ?? "[已刪除]") + ", ";
-    userList += participantUsernames[participantCount - 1];
-    const title = chineseNumbers[participantCount - 1] + "人團：" + userList;
-
-    const [lastMessage] = await db
-      .select({
-        senderUsername: usersTable.username,
-        content: privateMessagesTable.content,
-      })
-      .from(privateMessagesTable)
-      .where(eq(privateMessagesTable.dateId, dateId))
-      .leftJoin(
-        usersTable,
-        eq(usersTable.userId, privateMessagesTable.senderId)
-      )
-      .orderBy(desc(privateMessagesTable.sentAt))
-      .limit(1)
-      .execute();
-
-    dates.push({
-      dateId,
-      title,
-      lastMessage:
-        (lastMessage.senderUsername ?? "[已刪除]") + ": " + lastMessage.content,
-    });
-  });
+  const dateCount = dateIds.length;
+  for (let i = 0; i < dateCount; i++) {
+    const ret = await getDateDetails(dateIds[i]);
+    dates.push(ret);
+  }
 
   return (
     <div className="flex flex-row h-full bg-white">

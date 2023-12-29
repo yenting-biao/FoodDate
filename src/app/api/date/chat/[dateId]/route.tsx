@@ -43,7 +43,7 @@ export async function GET(
   try {
     const participantUsernamesRet = await db
       .select({
-        username: usersTable.userId,
+        username: usersTable.username,
       })
       .from(dateParticipantsTable)
       .leftJoin(
