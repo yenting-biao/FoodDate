@@ -70,6 +70,7 @@ export const restaurantsTable = pgTable(
     address: text("address").notNull(),
     latitude: doublePrecision("latitude").notNull(),
     longitude: doublePrecision("longitude").notNull(),
+    imageUrls: text("imageurls"),
   },
   (table) => ({
     placeIdIndex: index("placeIdIndex").on(table.placeId),
