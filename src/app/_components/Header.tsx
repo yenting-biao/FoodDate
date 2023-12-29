@@ -271,34 +271,31 @@ export default function Header() {
                 {loading && (
                   <div className="mx-5 my-2 loading-spinner h-[30px] w-[30px]"></div>
                 )}
-                {!loading && (
-                  <>
-                    {notifications.length === 0 && (
-                      <div className="mx-5 my-2">尚無通知</div>
-                    )}
-                    {notifications.length > 0 &&
-                      notifications.map((notification, index) => {
-                        return (
-                          <MenuItem
-                            className={`${menuItemStyle} max-w-xs`}
-                            sx={{ whiteSpace: "normal" }}
-                            key={index}
-                            onClick={() =>
-                              handleNotificationRead(
-                                notification.notificationId,
-                                notification.redirectUrl
-                              )
-                            }
-                          >
-                            <ListItemIcon>
-                              <NotificationsIcon fontSize="small" />
-                            </ListItemIcon>
-                            <ListItemText>{notification.content}</ListItemText>
-                          </MenuItem>
-                        );
-                      })}
-                  </>
+                {!loading && notifications.length === 0 && (
+                  <div className="mx-5 my-2">尚無通知</div>
                 )}
+                {!loading &&
+                  notifications.length > 0 &&
+                  notifications.map((notification, index) => {
+                    return (
+                      <MenuItem
+                        className={`${menuItemStyle} max-w-xs`}
+                        sx={{ whiteSpace: "normal" }}
+                        key={index}
+                        onClick={() =>
+                          handleNotificationRead(
+                            notification.notificationId,
+                            notification.redirectUrl
+                          )
+                        }
+                      >
+                        <ListItemIcon>
+                          <NotificationsIcon fontSize="small" />
+                        </ListItemIcon>
+                        <ListItemText>{notification.content}</ListItemText>
+                      </MenuItem>
+                    );
+                  })}
               </Menu>
 
               <Tooltip title="帳號設定">
