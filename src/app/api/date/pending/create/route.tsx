@@ -45,6 +45,13 @@ export async function PUT(req: NextRequest) {
       })
       .returning();
 
+    await db
+      .insert(pendingDateParticipantsTable)
+      .values({
+        pendingDateId: newPendingDate.pendingDateId,
+        participantId: userId,
+      });
+
     return NextResponse.json(
       { pendingDateId: newPendingDate.pendingDateId },
       { status: 200 }
