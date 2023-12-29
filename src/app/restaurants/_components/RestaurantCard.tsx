@@ -36,6 +36,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { CldUploadWidget } from 'next-cloudinary';
 import { publicEnv } from '@/lib/env/public';
+import React from 'react';
 
 
 const translateTypeToChinese = (type: string): string => {
@@ -191,9 +192,10 @@ type RestaurantProps = {
   photoReference: string[];
   placeId: string;
   reviews: Review[];
+  onNewImage: (newImageUrl: string, placeId: string) => void;
 }
 
-export default function RestaurantCard({ name, address, types, lat, lng, userPositionLat, userPositionLng, rating, userRatingsTotal, priceLevel, photoReference, placeId, reviews }: RestaurantProps) {
+export default function RestaurantCard({ name, address, types, lat, lng, userPositionLat, userPositionLng, rating, userRatingsTotal, priceLevel, photoReference, placeId, reviews,onNewImage }: RestaurantProps) {
   const { data: session, status } = useSession();
   const isLoggedIn = status === 'authenticated';
   const [expanded, setExpanded] = useState<boolean>(false);
@@ -203,15 +205,21 @@ export default function RestaurantCard({ name, address, types, lat, lng, userPos
   const [stars, setStars] = useState(5);
   const [reviewArray, setReviewArray] = useState<Review[]>(reviews);
   const [url, setUrl] = useState(photoReference);
+  const router = useRouter();
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setContent(event.target.value);
   };
+  //const router = useRouter();
   useEffect(() => {
+    if (photoReference.length === 0) {
+      return;
+    }
     if (photoReference.length > url.length) {
       setUrl(photoReference);
     } else {
       setUrl(url);
     }
+    router.refresh();
   }, [photoReference, url]);
   const handlePost = async () => {
     if (content == '') return;
@@ -338,7 +346,7 @@ export default function RestaurantCard({ name, address, types, lat, lng, userPos
             setShowLeftArrow(false);
             setShowRightArrow(false);
           }}
-        ><CldUploadWidget 
+        ><CldUploadWidget
         options={{ 
           sources: ['local', 'url', 'camera', 'google_drive', 'dropbox'], 
           resourceType: 'image',
@@ -364,21 +372,32 @@ export default function RestaurantCard({ name, address, types, lat, lng, userPos
             //  console.log("error");
             //} else {
               setUrl(currentUrls => [...currentUrls, newImageUrl]);
+              onNewImage(newImageUrl, placeId);
             //}
           }               
         }}
       >{({ open }) => {
         return (
+          <Tooltip title={
+            <React.Fragment>
+              {isLoggedIn ? (
+                isWithinDistance 
+                  ? <span style={{ display: 'block', textAlign: 'center' }}>點擊上傳圖片 Click to Upload!<br />(It takes some time to display on the map)</span> 
+                  : <span>靠近餐廳可上傳圖片 Get Closer!</span>
+              ) : (
+                <span>登入並靠近餐廳可上傳圖片 Login to Upload!</span>
+              )}
+            </React.Fragment>
+          }  placement="bottom" arrow>
           <CardMedia
             className="relative"
             component="img"
             height="120"
             // Use the current photo index to get the current photo URL
-            image={url.length > 0 && currentPhotoIndex < url.length ? url[currentPhotoIndex] : "/food1.jpeg"}
+            image={url.length > 0 && currentPhotoIndex < url.length ? url[currentPhotoIndex] : "/food_default.jpg"}
             alt="Restaurant Photo"
-            onClick={() => open()}
-
-          />);
+            onClick={isLoggedIn ? () => open() : undefined}
+          /></Tooltip>);
         }}</CldUploadWidget>  
           {showLeftArrow && <IconButton
             className="absolute left-0 top-0 bottom-0 my-auto mx-0 z-10"

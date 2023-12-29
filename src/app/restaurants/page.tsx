@@ -5,7 +5,7 @@ import {
   Map,
   Marker,
 } from "@vis.gl/react-google-maps";
-import { useState, useEffect, CSSProperties, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
 import { keyframes } from '@emotion/react';
 
@@ -99,23 +99,23 @@ export default function RestaurantPage() {
   const [selectRestaurantLng, setSelectRestaurantLng] = useState<number>();
   const [selectRestaurantPlaceId, setSelectRestaurantPlaceId] = useState("");
   const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant>();
+  const [selectImageUrls, setSelectImageUrls] = useState([]);
   const initialized = useRef(false)
   useEffect(() => {
-    if (!initialized.current) {
-      initialized.current = true
+
     const fetchRestaurants = async () => {
       try {
         const response = await fetch('/api/restaurants');
         const data = await response.json();
-        console.log(data);
         setRestaurants(data);
       } catch (error) {
         console.error('Error fetching restaurants:', error);
       }
     };
 
-    fetchRestaurants();}
-  }, []);
+    fetchRestaurants();
+
+  }, [restaurants]);
   //useEffect(() => {
   //  console.log('Restaurants updated:', restaurants);
   //}, [restaurants]);
@@ -187,6 +187,16 @@ export default function RestaurantPage() {
       { icon: <FavoriteIcon />, name: "顯示我的最愛 Show Your Favourite", onClick: () => handleShowMyFav() },
     ] : []
   ];
+  const handleNewImage = (newImageUrl: string, placeId: string) => {
+    setRestaurants(currentRestaurants => 
+      currentRestaurants.map(restaurant => 
+        restaurant.placeId === placeId
+          ? { ...restaurant, imageUrls: JSON.stringify([newImageUrl, ...(JSON.parse(restaurant.imageUrls || '[]'))]) }
+          : restaurant
+      )
+    );
+  };
+
 
   const handleShowAllClick = () => {
     setAllRes(true);
@@ -209,6 +219,26 @@ export default function RestaurantPage() {
   };
   const handleMarkerClick = async (placeId: any, name: any, address: any, lat: any, lng: any) => {
     //setSelectRestaurant(false)
+    try{
+      const res = await fetch('api/restaurants',{
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          placeId
+        }),
+      });
+      if (!res.ok){
+        return;
+      }
+      const data = await res.json();
+      const imageUrls = JSON.parse(data[0].imageUrls);
+      //console.log(imageUrls);
+      setSelectImageUrls(imageUrls);
+    }catch(error){
+      
+    }
     const foundRestaurant = restaurants.find(restaurant => restaurant.name === name);
     setSelectedRestaurant(foundRestaurant);
     try {
@@ -317,11 +347,15 @@ export default function RestaurantPage() {
     }
   };
   const [displayRestaurants, setDisplayRestaurants] = useState<Restaurant[]>([]);
+  const shuffledRef = useRef(false);
   useEffect(() => {
-    const shuffled = shuffleArray(restaurants);
-    setDisplayRestaurants(shuffled);
+    // Only shuffle the restaurants if they haven't been shuffled yet
+    if (!shuffledRef.current && restaurants.length > 0) {
+      const shuffled = shuffleArray(restaurants);
+      setDisplayRestaurants(shuffled);
+      shuffledRef.current = true; // Mark as shuffled
+    }
   }, [restaurants]);
-
   function shuffleArray(array: any) {
     let shuffled = [...array];
     for (let i = shuffled.length - 1; i > 0; i--) {
@@ -351,6 +385,7 @@ export default function RestaurantPage() {
               <div className="h-full overflow-y-scroll p-3">
                 <Stack spacing={2}>
                   {<RestaurantCard
+                    key={selectRestaurantName}
                     name={selectRestaurantName}
                     address={selectRestaurantAddress}
                     types={SelectRestaurantDetail.map((item) => item.type)}
@@ -362,12 +397,12 @@ export default function RestaurantPage() {
                     userRatingsTotal={100}
                     priceLevel={"$$"}
                     photoReference={
-                      selectedRestaurant && selectedRestaurant.imageUrls
-                        ? JSON.parse(selectedRestaurant.imageUrls)
+                      selectImageUrls ? selectImageUrls
                         : []
                     }
                     placeId={selectRestaurantPlaceId}
                     reviews={reviews}
+                    onNewImage={handleNewImage}
                   />}
                   {/*Array.from({ length: 0 }).map((_, index) => (
                     <RestaurantCard
@@ -428,7 +463,7 @@ export default function RestaurantPage() {
                         <img
                           src={restaurant.imageUrls && JSON.parse(restaurant.imageUrls).length > 0
                             ? JSON.parse(restaurant.imageUrls)[0]
-                            : "/food1.jpeg"} // Replace withdefault image path
+                            : "/food_default.jpg"} // Replace withdefault image path
                           alt="Restaurant"
                           style={{
                             width: '100%',
