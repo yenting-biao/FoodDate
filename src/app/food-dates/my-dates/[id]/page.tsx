@@ -10,15 +10,21 @@ import MessageContainer from "./_components/MessageContainer";
 import { useSession } from "next-auth/react";
 import { useParams, useRouter } from "next/navigation";
 import { Message } from "@/lib/types/db";
+import Avatar from "@mui/material/Avatar";
+import AvatarGroup from "@mui/material/AvatarGroup";
 
 export default function Chat() {
   const { data: session } = useSession();
   const username = session?.user?.username;
+  const userId = session?.user?.id;
   const router = useRouter();
   const { id } = useParams();
   const dateId = Array.isArray(id) ? id[0] : id;
   const [loading, setLoading] = useState<boolean>(true);
   const [title, setTitle] = useState<string>("Loading chat...");
+  const [avatarUrls, setAvatarUrls] = useState<
+    { username: string; avatarUrl: string | null }[]
+  >([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [position, setPosition] = useState({
     lat: 25.01834354450372,
@@ -45,6 +51,7 @@ export default function Chat() {
       }
       const data: {
         participantUsernames: (string | null)[];
+        avatarUrls: { username: string; avatarUrl: string | null }[];
         messages: Message[];
       } = await res.json();
       const participantCount = data.participantUsernames.length;
@@ -53,6 +60,7 @@ export default function Chat() {
         userList += (data.participantUsernames[i] ?? "[已刪除]") + ", ";
       userList += data.participantUsernames[participantCount - 1];
       setTitle(chineseNumbers[participantCount - 1] + "人團：" + userList);
+      setAvatarUrls(data.avatarUrls);
       setMessages(data.messages);
       setLoading(false);
     };
@@ -87,7 +95,7 @@ export default function Chat() {
     router.refresh();
   }
 
-  if (!username) return;
+  if (!username || !userId) return;
 
   return (
     <>
@@ -99,9 +107,22 @@ export default function Chat() {
       {!loading && (
         <div className="flex w-3/4 h-full">
           <div className="h-full w-2/3 flex-col overflow-y-scroll flex">
-            <p className="text-lg border-b-2 py-2 px-3 bg-white w-full">
-              {title}
-            </p>
+            <div className="flex flex-row gap-2 border-b-2 w-full py-3 px-3 overflow-hidden items-center">
+              <AvatarGroup spacing="small">
+                {avatarUrls.map((element, index) => (
+                  <Avatar
+                    alt={element.username ?? ""}
+                    key={index}
+                    src={element.avatarUrl ?? ""}
+                  >
+                    {element.username.charAt(0) ?? ""}
+                  </Avatar>
+                ))}
+              </AvatarGroup>
+              <p className="text-lg w-full whitespace-nowrap text-ellipsis overflow-hidden">
+                {title}
+              </p>
+            </div>
             <div className="px-3 flex flex-col-reverse justify-start gap-2 h-full overflow-y-scroll">
               {messages.map((m, index) => (
                 <MessageContainer
@@ -109,7 +130,7 @@ export default function Chat() {
                   username={username}
                   senderUsername={m.senderUsername}
                   content={m.content}
-                  avatarUrls={{}}
+                  avatarUrls={avatarUrls}
                 />
               ))}
             </div>
