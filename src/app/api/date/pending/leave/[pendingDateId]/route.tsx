@@ -13,7 +13,7 @@ import {
 } from "@/db/schema";
 import { auth } from "@/lib/auth";
 
-export async function POST(
+export async function DELETE(
   req: NextRequest,
   {
     params,
