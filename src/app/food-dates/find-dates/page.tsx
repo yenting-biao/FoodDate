@@ -10,6 +10,7 @@ import Stack from "@mui/material/Stack";
 import React, { useEffect, useState } from "react";
 import MuiAlert, { AlertProps } from "@mui/material/Alert";
 import { Check } from "lucide-react";
+import { pendingDateParticipantsTable } from "@/db/schema";
 
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
   function Alert(props, ref) {
@@ -27,10 +28,16 @@ type pendingDateType = {
   joined: boolean;
 };
 
+type disabledType = {
+  pendingDateId: string;
+  disabled: boolean;
+};
+
 export default function FindDatePage() {
   const [loading, setLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [hasError, setHasError] = useState<boolean>(false);
+  const [disabled, setDisabled] = useState<disabledType[]>([]);
   const [pendingDates, setPendingDates] = useState<pendingDateType[]>([]);
   const chineseNumbers = ["一", "二", "三", "四"];
 
@@ -47,6 +54,14 @@ export default function FindDatePage() {
       const data: {
         pendingDatesWithParticipationStatus: pendingDateType[];
       } = await res.json();
+      setDisabled(
+        data.pendingDatesWithParticipationStatus.map((element) => {
+          return {
+            pendingDateId: element.pendingDateId,
+            disabled: false,
+          };
+        })
+      );
       setPendingDates(data.pendingDatesWithParticipationStatus);
       setLoading(false);
     };
@@ -56,8 +71,105 @@ export default function FindDatePage() {
   const handleCloseError = () => {
     setHasError(false);
   };
-  async function joinDate(dateId: string) {
-    //TODO:
+  async function handleClick(pendingDateId: string) {
+    setDisabled((disabled) =>
+      disabled.map((element) => {
+        if (element.pendingDateId !== pendingDateId) return element;
+        else return { ...element, disabled: true };
+      })
+    );
+    const pendingDate = pendingDates.find(
+      (element) => element.pendingDateId === pendingDateId
+    );
+    if (!pendingDate) {
+      setErrorMessage("An error occured: failed to join/leave date");
+      setHasError(true);
+      setDisabled((disabled) =>
+        disabled.map((element) => {
+          if (element.pendingDateId !== pendingDateId) return element;
+          else return { ...element, disabled: false };
+        })
+      );
+      return;
+    }
+    try {
+      if (!pendingDate.joined) {
+        await fetch(`/api/date/pending/join/${pendingDateId}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+        if (pendingDate.remainingSlots === 1) {
+          setPendingDates((pendingDates) =>
+            pendingDates.filter(
+              (element) => element.pendingDateId !== pendingDateId
+            )
+          );
+          setDisabled((disabled) =>
+            disabled.filter(
+              (element) => element.pendingDateId !== pendingDateId
+            )
+          );
+          return;
+        } else {
+          setPendingDates((pendingDates) =>
+            pendingDates.map((element) => {
+              if (element.pendingDateId !== pendingDateId) return element;
+              else
+                return {
+                  ...element,
+                  remainingSlots: element.remainingSlots - 1,
+                  joined: !element.joined,
+                };
+            })
+          );
+        }
+      } else {
+        console.log("leaving");
+        await fetch(`/api/date/pending/leave/${pendingDateId}`, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+        if (pendingDate.remainingSlots + 1 === pendingDate.participantCount) {
+          setPendingDates((pendingDates) =>
+            pendingDates.filter(
+              (element) => element.pendingDateId !== pendingDateId
+            )
+          );
+          setDisabled((disabled) =>
+            disabled.filter(
+              (element) => element.pendingDateId !== pendingDateId
+            )
+          );
+          return;
+        } else {
+          setPendingDates((pendingDates) =>
+            pendingDates.map((element) => {
+              if (element.pendingDateId !== pendingDateId) return element;
+              else
+                return {
+                  ...element,
+                  remainingSlots: element.remainingSlots + 1,
+                  joined: !element.joined,
+                };
+            })
+          );
+        }
+      }
+    } catch (error) {
+      setErrorMessage("An error occured: failed to join/leave date");
+      setHasError(true);
+    } finally {
+      setDisabled((disabled) =>
+        disabled.map((element) => {
+          if (element.pendingDateId !== pendingDateId) return element;
+          else return { ...element, disabled: false };
+        })
+      );
+    }
   }
 
   return (
@@ -85,7 +197,7 @@ export default function FindDatePage() {
               <Tooltip
                 key={pendingDate.pendingDateId}
                 arrow
-                title="加入聚會"
+                title={pendingDate.joined ? "離開聚會" : "加入聚會"}
                 slotProps={{
                   popper: {
                     modifiers: [
@@ -103,8 +215,14 @@ export default function FindDatePage() {
                   className="active:bg-gray-200 hover:bg-gray-100 rounded-lg w-full px-2 py-2"
                   onClick={(event) => {
                     event.preventDefault();
-                    joinDate(pendingDate.pendingDateId);
+                    handleClick(pendingDate.pendingDateId);
                   }}
+                  disabled={
+                    disabled.find(
+                      (element) =>
+                        element.pendingDateId === pendingDate.pendingDateId
+                    )?.disabled
+                  }
                 >
                   <div className="flex justify-between items-center">
                     <div className="flex flex-col items-start w-3/4">
