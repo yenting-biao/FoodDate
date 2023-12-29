@@ -447,12 +447,6 @@ export const suggestionsTable = pgTable(
         onUpdate: "cascade",
       }
     ),
-    recommenderId: uuid("recommenderid")
-      .notNull()
-      .references(() => usersTable.userId, {
-        onDelete: "cascade",
-        onUpdate: "cascade",
-      }),
     createdAt: timestamp("createdat")
       .notNull()
       .default(sql`now()`),
