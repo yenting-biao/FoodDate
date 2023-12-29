@@ -67,7 +67,7 @@ export default async function MissionPage () {
             return (
               <MissionCard 
                 key={mission.missionId}
-                missionId={mission.missionId}                
+                missionId={mission.missionId ?? ""}                
                 missionName={mission.missionName}
                 missionDescription={mission.missionDescription ?? ""}
                 prize={mission.prize}

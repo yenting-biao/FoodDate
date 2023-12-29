@@ -42,6 +42,7 @@ export async function getUnfinishedMission (userId: string) {
     })
     .from(missionListsTable)
     .where(and(gte(missionListsTable.endAt, new Date()), notInArray(missionListsTable.missionId, missionIds)))
+    .execute();
     return res;
   } else {
     const res = await db
@@ -54,7 +55,8 @@ export async function getUnfinishedMission (userId: string) {
       endAt: missionListsTable.endAt,      
     })
     .from(missionListsTable)
-    .where(gte(missionListsTable.endAt, new Date()));
+    .where(gte(missionListsTable.endAt, new Date()))
+    .execute();
     return res;
   }
 }
