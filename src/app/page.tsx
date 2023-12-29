@@ -1,8 +1,14 @@
 import { Button } from "@mui/material";
 import Link from "next/link";
 import Image from "next/image";
+import { auth } from "@/lib/auth";
+import { redirect } from "next/navigation";
 
-export default function Home () {
+export default async function Home () {
+  const session = await auth();
+  if(session?.user?.email) {
+    redirect("/restaurants");
+  }
   return (
     <>
       <div className="relative flex flex-col p-5 gap-0 text-xl z-10 animate-slide-up">
