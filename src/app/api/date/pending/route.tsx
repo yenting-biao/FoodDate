@@ -49,6 +49,7 @@ export async function GET(req: NextRequest) {
           pendingDatesTable.pendingDateId
         )
       )
+      .orderBy(desc(pendingDatesTable.createdAt))
       .execute();
 
     const pendingDatesWithParticipationStatus = pendingDates.map(
