@@ -59,7 +59,9 @@ export default function FindDatePage() {
                 <Avatar className="w-6 h-6" />
                 <Avatar className="w-6 h-6" />
               </Stack>
-              <p className="text-xl">四人團缺二</p>
+              <p className="text-xl">
+                四人團<span className="text-red-600">缺二</span>
+              </p>
             </div>
             <div className="mt-2 text-gray-600">時間：午餐 (12:00 ~ 1:00)</div>
             <div
