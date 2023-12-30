@@ -16,6 +16,7 @@ import AvatarGroup from "@mui/material/AvatarGroup";
 import { pusherClient } from "@/lib/pusher/client";
 import { Info } from "lucide-react";
 import { off } from "process";
+import { Dialog } from "@mui/material";
 
 type PusherMessagePayload = {
   messageId: string;
@@ -39,7 +40,8 @@ export default function Chat() {
   const router = useRouter();
   const { id } = useParams();
   const dateId = Array.isArray(id) ? id[0] : id;
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [inserting, setInserting] = useState<boolean>(false);
   const [title, setTitle] = useState<string>("Loading chat...");
   const [avatarUrls, setAvatarUrls] = useState<
     { userId: string; username: string; avatarUrl: string | null }[]
@@ -67,6 +69,7 @@ export default function Chat() {
       return;
     }
     const fetchMessages = async () => {
+      setLoading(true);
       const res = await fetch(`/api/date/chat/${dateId}`);
       if (res.status === 404 || !res.ok) {
         router.push("/food-dates/my-dates");
@@ -205,6 +208,8 @@ export default function Chat() {
   const handleMapClick = async (event: any) => {
     const placeId = event.detail.placeId;
     if (!placeId) return;
+    document.body.style.cursor = "progress";
+    setInserting(true);
 
     try {
       const res = await fetch(
@@ -241,6 +246,7 @@ export default function Chat() {
                 address: addr,
                 lat: event.detail.latLng.lat,
                 lng: event.detail.latLng.lng,
+                types: data.types,
               }),
             });
             setSuggestedRestaurants((old) => [
@@ -275,6 +281,9 @@ export default function Chat() {
       }
     } catch (error) {
       console.error("Error fetching place details:", error);
+    } finally {
+      document.body.style.cursor = "default";
+      setInserting(false);
     }
   };
 
@@ -366,6 +375,12 @@ export default function Chat() {
           </div>
         </div>
       )}
+      <Dialog open={inserting}>
+        <div className="p-5 flex flex-col justify-center items-center">
+          <div className="mx-5 my-2 loading-spinner h-[30px] w-[30px]"></div>
+          <div>載入中...</div>
+        </div>
+      </Dialog>
     </>
   );
 }
