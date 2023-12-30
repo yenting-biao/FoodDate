@@ -23,6 +23,8 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import { red } from '@mui/material/colors';
 import FavoriteIcon from '@mui/icons-material/Favorite';
@@ -202,7 +204,7 @@ type RestaurantProps = {
 }
 
 export default function RestaurantCard({ name, address, types, lat, lng, userPositionLat, userPositionLng, rating, userRatingsTotal, priceLevel, photoReference, placeId, reviews, onNewImage, onRemoveLike, onAddLike }: RestaurantProps) {
-  const { data: session, status } = useSession();
+  const { data: session, status, update } = useSession();
   const isLoggedIn = status === 'authenticated';
   const [expanded, setExpanded] = useState<boolean>(false);
   const [isWithinDistance, setIsWithinDistance] = useState(false);
@@ -352,6 +354,25 @@ export default function RestaurantCard({ name, address, types, lat, lng, userPos
       //console.log(reviewWithUserDetails)
       setReviewArray(prevReviews => [...prevReviews, reviewWithUserDetails]);
 
+      const prize = 5 + Math.floor(Math.random() * 5);
+      const resp = await fetch("/api/profile", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          coins: prize
+        })
+      })
+      if (!resp.ok) {
+        return;
+      }
+      setSuccessMessage(`留言成功，你獲得了 ${prize} 金幣！`);
+      setSuccessSubmit(true);
+      update();
+
+
+
     } catch (error) {
       console.error(error);
     }
@@ -375,8 +396,11 @@ export default function RestaurantCard({ name, address, types, lat, lng, userPos
 
   const [showLeftArrow, setShowLeftArrow] = useState<boolean>(false);
   const [showRightArrow, setShowRightArrow] = useState<boolean>(false);
-
-
+  const [successSubmit, setSuccessSubmit] = useState<boolean>(false);
+  const [successMessage, setSuccessMessage] = useState<string>("");
+  const handleCloseSuccess = () => {
+    setSuccessSubmit(false);
+  }
   useEffect(() => {
     //console.log(userPositionLat)
     setShowLeftArrow(currentPhotoIndex !== 0);
@@ -402,7 +426,7 @@ export default function RestaurantCard({ name, address, types, lat, lng, userPos
     const average = reviews.length > 0 ? totalExpense / reviews.length : 0;
     return parseFloat(average.toFixed(0));
   };
-  const displayExpense = (value:number) => {
+  const displayExpense = (value: number) => {
     switch (value) {
       case 1: return '$（200元以內）';
       case 2: return '$$（400元以內）';
@@ -415,12 +439,27 @@ export default function RestaurantCard({ name, address, types, lat, lng, userPos
   const averageExpense = getAverageExpense(reviewArray);
 
 
-  function handleChangeExpense(event:any) {
+  function handleChangeExpense(event: any) {
     setExpense(event.target.value);
   };
 
   return (
+
     <Paper elevation={5}>
+      <Snackbar
+        open={successSubmit}
+        autoHideDuration={2000}
+        onClose={handleCloseSuccess}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          onClose={handleCloseSuccess}
+          severity="success"
+          sx={{ width: "100%" }}
+        >
+          {successMessage}
+        </Alert>
+      </Snackbar>
       <Card>
         <CardHeader
           title={name}
@@ -478,6 +517,24 @@ export default function RestaurantCard({ name, address, types, lat, lng, userPos
               //if(!res.ok) {
               //  console.log("error");
               //} else {
+              if (url.length == 0) {
+                const prize = 100 + Math.floor(Math.random() * 200);
+                const res = await fetch("/api/profile", {
+                  method: "PUT",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({
+                    coins: prize
+                  })
+                })
+                if (!res.ok) {
+                  return;
+                }
+                setSuccessMessage(`成為第一位上傳成功的人，你獲得了 ${prize} 金幣！`);
+                setSuccessSubmit(true);
+                update();
+              }
               setUrl(currentUrls => [...currentUrls, newImageUrl]);
               onNewImage(newImageUrl, placeId);
               //}
@@ -600,20 +657,20 @@ export default function RestaurantCard({ name, address, types, lat, lng, userPos
                   <Rating value={stars} onChange={(_, value) => {
                     setStars(value !== null ? value : 5);
                   }} /><p>&nbsp;</p><FormControl fullWidth>
-                  <InputLabel id="demo-simple-select-label">消費金額</InputLabel>
-                  <Select
-                    labelId="demo-simple-select-label"
-                    id="demo-simple-select"
-                    value={expense}
-                    label="Expense"
-                    onChange= {handleChangeExpense}
-                  >
-                    <MenuItem value={1}>$（200元以內）</MenuItem>
-                    <MenuItem value={2}>$$（400元以內）</MenuItem>
-                    <MenuItem value={3}>$$$（600元以內）</MenuItem>
-                    <MenuItem value={4}>$$$$（600元以上）</MenuItem>
-                  </Select>
-                </FormControl>
+                    <InputLabel id="demo-simple-select-label">消費金額</InputLabel>
+                    <Select
+                      labelId="demo-simple-select-label"
+                      id="demo-simple-select"
+                      value={expense}
+                      label="Expense"
+                      onChange={handleChangeExpense}
+                    >
+                      <MenuItem value={1}>$（200元以內）</MenuItem>
+                      <MenuItem value={2}>$$（400元以內）</MenuItem>
+                      <MenuItem value={3}>$$$（600元以內）</MenuItem>
+                      <MenuItem value={4}>$$$$（600元以上）</MenuItem>
+                    </Select>
+                  </FormControl>
                   <TextField
                     label="留下您的評論..."
                     variant="outlined"
