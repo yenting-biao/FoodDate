@@ -93,7 +93,7 @@ export default function Header() {
   // Access username and avatar URL from the session
   // const userName = session?.user?.username ?? "Guest";
   const isAdmin = session?.user?.email === "admin@ntu.edu.tw";
-  const avatarUrl = session?.user?.avatarUrl ?? "/static/images/avatar/1.jpg";
+  const avatarUrl = session?.user?.avatarUrl ?? "";
   const userId = session?.user?.id;
 
   const menuItemStyle = "py-3 px-6";
