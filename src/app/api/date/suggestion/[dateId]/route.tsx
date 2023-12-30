@@ -181,13 +181,6 @@ export async function PUT(
       senderId: null,
       senderUsername: session.user.username,
       content: newMessage.content,
-      isSuggestion: false,
-      placeId: "",
-      name: "",
-      address: "",
-      lat: 0,
-      lng: 0,
-      add: false,
     });
 
     const participants = await db
@@ -206,7 +199,8 @@ export async function PUT(
           senderId: "",
           senderUsername: "",
           content: newMessage.content,
-          isSuggestion: true,
+        });
+        await pusher.trigger(`private-${dateId}`, "suggestion", {
           ...data,
           add: true,
         });
@@ -310,13 +304,6 @@ export async function DELETE(
       senderId: null,
       senderUsername: session.user.username,
       content: newMessage.content,
-      isSuggestion: false,
-      placeId: "",
-      name: "",
-      address: "",
-      lat: 0,
-      lng: 0,
-      add: false,
     });
 
     const participants = await db
@@ -330,12 +317,7 @@ export async function DELETE(
     const numOfParticipants = participants.length;
     for (let i = 0; i < numOfParticipants; i++) {
       if (participants[i].userId !== null) {
-        await pusher.trigger(`private-${participants[i].userId}`, "chat:send", {
-          dateId,
-          senderId: "",
-          senderUsername: "",
-          content: newMessage.content,
-          isSuggestion: true,
+        await pusher.trigger(`private-${dateId}`, "suggestion", {
           ...data,
           add: false,
         });
