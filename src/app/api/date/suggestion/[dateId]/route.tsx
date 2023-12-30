@@ -6,6 +6,7 @@ import { db } from "@/db";
 import {
   dateParticipantsTable,
   privateMessagesTable,
+  restaurantTypesTable,
   restaurantsTable,
   suggestionsTable,
   usersTable,
@@ -149,9 +150,39 @@ export async function PUT(
     address: string;
     lat: number;
     lng: number;
+    types: string[];
   } = await req.json();
   const { placeId } = data;
   try {
+    const [restaurantExists] = await db
+      .select({ placeId: restaurantsTable.placeId })
+      .from(restaurantsTable)
+      .where(eq(restaurantsTable.placeId, placeId))
+      .execute();
+    if (!restaurantExists) {
+      await db.insert(restaurantsTable).values({
+        placeId,
+        name: data.name,
+        address: data.address,
+        latitude: data.lat,
+        longitude: data.lng,
+      });
+      const len = data.types.length;
+      for (let i = 0; i < len; i++) {
+        if (
+          !(
+            data.types[i] === "food" ||
+            data.types[i] === "point_of_interest" ||
+            data.types[i] === "establishment"
+          )
+        ) {
+          await db.insert(restaurantTypesTable).values({
+            placeId,
+            type: data.types[i],
+          });
+        }
+      }
+    }
     const [name] = await db
       .select({ name: restaurantsTable.name })
       .from(restaurantsTable)
