@@ -572,7 +572,7 @@ export default function RestaurantPage() {
       <main className="flex h-full items-center justify-center w-full">
         <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!}>
           {(selectRestaurant &&
-            <div className="flex flex-col h-full w-2/5 p-1 gap-3">
+            <div className="flex flex-col h-full w-screen md:w-2/3 p-1 gap-3">
               <button
                 onClick={() => setSelectRestaurant(false)}
                 className="self-end text-sm px-2 py-1 cursor-pointer" // Style as desired
