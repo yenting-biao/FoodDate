@@ -42,7 +42,7 @@ export default function Chat() {
   const [loading, setLoading] = useState<boolean>(true);
   const [title, setTitle] = useState<string>("Loading chat...");
   const [avatarUrls, setAvatarUrls] = useState<
-    { username: string; avatarUrl: string | null }[]
+    { userId: string; username: string; avatarUrl: string | null }[]
   >([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [position, setPosition] = useState({
@@ -75,7 +75,7 @@ export default function Chat() {
       const res2 = await fetch(`/api/date/suggestion/${dateId}`);
       const data: {
         participantUsernames: (string | null)[];
-        avatarUrls: { username: string; avatarUrl: string | null }[];
+        avatarUrls: { userId: string; username: string; avatarUrl: string | null }[];
         messages: Message[];
       } = await res.json();
       const data2: { suggestedRestaurants: selectedRestaurantType[] } =

@@ -62,9 +62,9 @@ export default function MessageContainer({
             }}
           >
             <Avatar
-              alt={username}
+              alt={senderUsername ?? ""}
               src={
-                avatarUrls.find((element) => element.username === username)
+                avatarUrls.find((element) => element.username === senderUsername)
                   ?.avatarUrl ?? ""
               }
               className="w-[30px] h-[30px]"
@@ -93,9 +93,9 @@ export default function MessageContainer({
             }}
           >
             <Avatar
-              alt={username}
+              alt={senderUsername ?? ""}
               src={
-                avatarUrls.find((element) => element.username === username)
+                avatarUrls.find((element) => element.username === senderUsername)
                   ?.avatarUrl ?? ""
               }
               className="w-[30px] h-[30px]"

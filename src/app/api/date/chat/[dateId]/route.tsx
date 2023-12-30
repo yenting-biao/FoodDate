@@ -84,6 +84,7 @@ export async function GET(
 
     const avatarUrls = await db
       .select({
+        userId: usersTable.userId,
         username: usersTable.username,
         avatarUrl: usersTable.avatarUrl,
       })
