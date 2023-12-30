@@ -143,12 +143,12 @@ export async function PUT(
     );
   }
 
-  const data: { 
+  const data: {
     placeId: string;
     name: string;
     address: string;
     lat: number;
-    lng: number; 
+    lng: number;
   } = await req.json();
   const { placeId } = data;
   try {
@@ -181,6 +181,13 @@ export async function PUT(
       senderId: null,
       senderUsername: session.user.username,
       content: newMessage.content,
+      isSuggestion: false,
+      placeId: "",
+      name: "",
+      address: "",
+      lat: 0,
+      lng: 0,
+      add: false,
     });
 
     const participants = await db
@@ -199,9 +206,9 @@ export async function PUT(
           senderId: "",
           senderUsername: "",
           content: newMessage.content,
-        });
-        await pusher.trigger(`private-${participants[i].userId}`, "suggestion", {
-          ...data, add: true
+          isSuggestion: true,
+          ...data,
+          add: true,
         });
       }
     }
@@ -268,25 +275,48 @@ export async function DELETE(
     );
   }
 
-  const data: { 
+  const data: {
     placeId: string;
     name: string;
     address: string;
     lat: number;
-    lng: number; 
+    lng: number;
   } = await req.json();
   const { placeId } = data;
   try {
     await db
       .delete(suggestionsTable)
       .where(eq(suggestionsTable.placeId, placeId));
-    
+
+    const [newMessage] = await db
+      .insert(privateMessagesTable)
+      .values({
+        dateId,
+        senderId: null,
+        content: `server:${session.user.username} 取消建議 ${data.name}`,
+      })
+      .returning();
+
     const pusher = new Pusher({
       appId: privateEnv.PUSHER_ID,
       key: publicEnv.NEXT_PUBLIC_PUSHER_KEY,
       secret: privateEnv.PUSHER_SECRET,
       cluster: publicEnv.NEXT_PUBLIC_PUSHER_CLUSTER,
       useTLS: true,
+    });
+
+    await pusher.trigger(`private-${dateId}`, "chat:send", {
+      messageId: newMessage.messageId,
+      senderId: null,
+      senderUsername: session.user.username,
+      content: newMessage.content,
+      isSuggestion: false,
+      placeId: "",
+      name: "",
+      address: "",
+      lat: 0,
+      lng: 0,
+      add: false,
     });
 
     const participants = await db
@@ -300,8 +330,14 @@ export async function DELETE(
     const numOfParticipants = participants.length;
     for (let i = 0; i < numOfParticipants; i++) {
       if (participants[i].userId !== null) {
-        await pusher.trigger(`private-${participants[i].userId}`, "suggestion", {
-          ...data, add: false
+        await pusher.trigger(`private-${participants[i].userId}`, "chat:send", {
+          dateId,
+          senderId: "",
+          senderUsername: "",
+          content: newMessage.content,
+          isSuggestion: true,
+          ...data,
+          add: false,
         });
       }
     }

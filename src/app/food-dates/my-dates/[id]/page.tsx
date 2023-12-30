@@ -22,6 +22,13 @@ type PusherMessagePayload = {
   senderId: string;
   senderUsername: string;
   content: string;
+  isSuggestion: boolean;
+  placeId: string;
+  name: string;
+  address: string;
+  lat: number;
+  lng: number;
+  add: boolean;
 };
 
 type selectedRestaurantType = {
@@ -75,7 +82,11 @@ export default function Chat() {
       const res2 = await fetch(`/api/date/suggestion/${dateId}`);
       const data: {
         participantUsernames: (string | null)[];
-        avatarUrls: { userId: string; username: string; avatarUrl: string | null }[];
+        avatarUrls: {
+          userId: string;
+          username: string;
+          avatarUrl: string | null;
+        }[];
         messages: Message[];
       } = await res.json();
       const data2: { suggestedRestaurants: selectedRestaurantType[] } =
@@ -104,32 +115,36 @@ export default function Chat() {
     try {
       const channel = pusherClient.subscribe(channelName);
 
-      channel.bind(
-        "suggestion",
-        ({
-          placeId,
-          name,
-          address,
-          lat,
-          lng,
-          add
-        }: selectedRestaurantType & { add: boolean}) => {
-          if(add) {
-            setSuggestedRestaurants((old) => [
-            {
-              placeId,
-              name,
-              address,
-              lat,
-              lng,
-            }, ...old]);
-            router.refresh();
-          } else {
-            setSuggestedRestaurants((old) => old.filter(element => element.placeId !== placeId));
-            router.refresh();
-          }
-        }
-      );
+      // channel.bind(
+      //   "suggestion",
+      //   ({
+      //     placeId,
+      //     name,
+      //     address,
+      //     lat,
+      //     lng,
+      //     add,
+      //   }: selectedRestaurantType & { add: boolean }) => {
+      //     if (add) {
+      //       setSuggestedRestaurants((old) => [
+      //         {
+      //           placeId,
+      //           name,
+      //           address,
+      //           lat,
+      //           lng,
+      //         },
+      //         ...old,
+      //       ]);
+      //       router.refresh();
+      //     } else {
+      //       setSuggestedRestaurants((old) =>
+      //         old.filter((element) => element.placeId !== placeId)
+      //       );
+      //       router.refresh();
+      //     }
+      //   }
+      // );
       channel.bind(
         "chat:send",
         ({
@@ -137,6 +152,13 @@ export default function Chat() {
           senderId,
           senderUsername,
           content,
+          isSuggestion,
+          placeId,
+          name,
+          address,
+          lat,
+          lng,
+          add,
         }: PusherMessagePayload) => {
           if (senderId === userId) return;
           dummyElementForScrolling.current?.scrollIntoView({
@@ -150,12 +172,36 @@ export default function Chat() {
             },
             ...messages,
           ]);
+          console.log("test:", isSuggestion, placeId);
+          if (isSuggestion) {
+            const addCopy = add!;
+            const placeIdCopy = placeId!;
+            if (addCopy!) {
+              const nameCopy = name!;
+              const addressCopy = address!;
+              const latCopy = lat!;
+              const lngCopy = lng!;
+              setSuggestedRestaurants((old) => [
+                {
+                  placeId: placeIdCopy,
+                  name: nameCopy,
+                  address: addressCopy,
+                  lat: latCopy,
+                  lng: lngCopy,
+                },
+                ...old,
+              ]);
+            } else {
+              setSuggestedRestaurants((old) =>
+                old.filter((element) => element.placeId !== placeIdCopy)
+              );
+            }
+          }
           router.refresh();
         }
       );
       return () => {
         channel.unbind("chat:send");
-        channel.unbind("suggestion");
         pusherClient.unsubscribe(channelName);
       };
     } catch (error) {
