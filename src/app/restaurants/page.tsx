@@ -116,6 +116,10 @@ export default function RestaurantPage() {
   const [loading,setLoading] = useState(false);
   const { data: session, status,update } = useSession();
   const handleVerify = async () => {
+    if (session?.user?.coins&&session?.user?.coins-50 < 0){
+      alert('餘額不足！請充值！');
+      return;
+    }
     setLoading(true);
     const addCoinRes = await fetch("/api/profile",{
       method: "PUT",
