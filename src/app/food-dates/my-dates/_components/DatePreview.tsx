@@ -22,7 +22,7 @@ export default function ChatPreview({
           <AvatarGroup
             max={2}
             total={(title.match(/is/g) || []).length}
-            spacing="small"
+            spacing="medium"
           >
             {avatarUrls.map((element, index) => (
               <Avatar
@@ -56,7 +56,7 @@ export default function ChatPreview({
           <AvatarGroup
             max={2}
             total={(title.match(/is/g) || []).length}
-            spacing="small"
+            spacing="medium"
           >
             {avatarUrls.map((element, index) => (
               <Avatar
