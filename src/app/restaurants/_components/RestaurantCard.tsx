@@ -19,6 +19,10 @@ import {
   Tooltip,
   TextField,
   Button,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import { red } from '@mui/material/colors';
 import FavoriteIcon from '@mui/icons-material/Favorite';
@@ -193,67 +197,79 @@ type RestaurantProps = {
   placeId: string;
   reviews: Review[];
   onNewImage: (newImageUrl: string, placeId: string) => void;
+  onRemoveLike: (placeId: string) => void;
+  onAddLike: (placeId: string) => void;
 }
 
-export default function RestaurantCard({ name, address, types, lat, lng, userPositionLat, userPositionLng, rating, userRatingsTotal, priceLevel, photoReference, placeId, reviews,onNewImage }: RestaurantProps) {
+export default function RestaurantCard({ name, address, types, lat, lng, userPositionLat, userPositionLng, rating, userRatingsTotal, priceLevel, photoReference, placeId, reviews, onNewImage, onRemoveLike, onAddLike }: RestaurantProps) {
   const { data: session, status } = useSession();
   const isLoggedIn = status === 'authenticated';
   const [expanded, setExpanded] = useState<boolean>(false);
   const [isWithinDistance, setIsWithinDistance] = useState(false);
   const [content, setContent] = useState<string>("");
-  const [expense, setExpense] = useState(0);
+  const [expense, setExpense] = useState(1);
   const [stars, setStars] = useState(5);
   const [reviewArray, setReviewArray] = useState<Review[]>(reviews);
   const [url, setUrl] = useState(photoReference);
-  const [isLiked,setIsLiked] = useState<boolean>();
+  const [isLiked, setIsLiked] = useState<boolean>();
+  const [isCopied, setIsCopied] = useState(false);
   const router = useRouter();
   useEffect(() => {
     const checkTag = async () => {
-        try {
-            const response = await fetch('/api/tag/checkTags', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                  userId: session?.user?.id, 
-                  placeId: placeId,
-                  tagName:'like' }),
-            });
-            if (response.ok) {
-                const data = await response.json();
-                //console.log(data.message)
-                setIsLiked(data.message==='true');
-            }
-        } catch (error) {
-            console.error('Error fetching data:', error);
+      try {
+        const response = await fetch('/api/tag/checkTags', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userId: session?.user?.id,
+            placeId: placeId,
+            tagName: 'like'
+          }),
+        });
+        if (response.ok) {
+          const data = await response.json();
+          //console.log(data.message)
+          setIsLiked(data.message === 'true');
         }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
     };
 
     checkTag();
-}, []);
-  const handleLike = async() => {
-    if (!isLiked){
-    try {
-      const res = await fetch('api/tag/useTags', {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userId: session?.user?.id,
-          placeId: placeId,
-          tagName: 'like'
-        })
-      });
-      if (!res.ok){
+  }, []);
+  const handleCopy = () => {
+    navigator.clipboard.writeText(name + " " + address);
+    setIsCopied(true);
+    // Optionally, reset after a few seconds
+    setTimeout(() => setIsCopied(false), 3000); // Reset after 3 seconds
+  };
+  const handleLike = async () => {
+    if (!isLiked) {
+      try {
+        const res = await fetch('api/tag/useTags', {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            userId: session?.user?.id,
+            placeId: placeId,
+            tagName: 'like'
+          })
+        });
+        if (!res.ok) {
+          return;
+        }
+        setIsLiked(true);
+        onAddLike(placeId);
+      } catch (error) {
         return;
       }
-      setIsLiked(true);
-    }catch(error){
-      return;
-    }}
-    else{
+    }
+    else {
       const res = await fetch('api/tag/useTags', {
         method: "DELETE",
         headers: {
@@ -265,10 +281,11 @@ export default function RestaurantCard({ name, address, types, lat, lng, userPos
           tagName: 'like'
         })
       });
-      if (!res.ok){
+      if (!res.ok) {
         return;
       }
       setIsLiked(false);
+      onRemoveLike(placeId);
     }
   }
 
@@ -331,7 +348,7 @@ export default function RestaurantCard({ name, address, types, lat, lng, userPos
       };
       setContent('');
       setStars(5);
-      console.log(reviewWithUserDetails)
+      //console.log(reviewWithUserDetails)
       setReviewArray(prevReviews => [...prevReviews, reviewWithUserDetails]);
 
     } catch (error) {
@@ -368,7 +385,7 @@ export default function RestaurantCard({ name, address, types, lat, lng, userPos
     // Calculate the distance and set isWithinDistance
     if (lat && lng) {
       const distance = calculateDistance(lat, lng, userPositionLat, userPositionLng);
-      setIsWithinDistance(distance <= 10);
+      setIsWithinDistance(distance <= publicEnv.NEXT_PUBLIC_VERIFY_DISTANCE_BASE);
     }
   }, [lat, lng, userPositionLat, userPositionLng]);
   useEffect(() => {
@@ -379,17 +396,34 @@ export default function RestaurantCard({ name, address, types, lat, lng, userPos
     const average = reviews.length > 0 ? totalStars / reviews.length : 0;
     return parseFloat(average.toFixed(1));
   };
-  
+  const getAverageExpense = (reviews: any) => {
+    const totalExpense = reviews.reduce((acc: any, review: any) => acc + review.reviews.expense, 0);
+    const average = reviews.length > 0 ? totalExpense / reviews.length : 0;
+    return parseFloat(average.toFixed(0));
+  };
+  const displayExpense = (value:number) => {
+    switch (value) {
+      case 1: return '$';
+      case 2: return '$$';
+      case 3: return '$$$';
+      case 4: return '$$$$';
+      default: return '尚無消費資訊';
+    }
+  };
   const averageStars = getAverageStars(reviewArray);
+  const averageExpense = getAverageExpense(reviewArray);
 
 
+  function handleChangeExpense(event:any) {
+    setExpense(event.target.value);
+  };
 
   return (
     <Paper elevation={5}>
       <Card>
         <CardHeader
           title={name}
-          subheader={ // TODO: 這東西的對齊有問題啊
+          subheader={
             <Box display="flex" flexDirection="row" alignItems="center" gap={1}>
               <div className="mt-px">
                 {averageStars}
@@ -410,7 +444,7 @@ export default function RestaurantCard({ name, address, types, lat, lng, userPos
           onMouseEnter={() => {
             // Show the next arrow when the mouse enters the photo
             setShowLeftArrow(currentPhotoIndex !== 0);
-            setShowRightArrow(url.length !== 0&&currentPhotoIndex !== url.length - 1);
+            setShowRightArrow(url.length !== 0 && currentPhotoIndex !== url.length - 1);
             //console.log(url.length)
           }}
           onMouseLeave={() => {
@@ -419,58 +453,58 @@ export default function RestaurantCard({ name, address, types, lat, lng, userPos
             setShowRightArrow(false);
           }}
         ><CldUploadWidget
-        options={{ 
-          sources: ['local', 'url', 'camera', 'google_drive', 'dropbox'], 
-          resourceType: 'image',
-          clientAllowedFormats: ['gif', 'png', 'jpg', 'jpeg', 'heif'],
-        }}
-        uploadPreset={publicEnv.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET}
-        onSuccess={async (result) => {
-          console.log(result); 
-          
-          if (result && typeof result.info === 'object' && 'secure_url' in result.info){
-            const newImageUrl: string = String(result.info.secure_url);
-            const res = await fetch("/api/restaurants", {
-              method: "PUT",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                placeId: placeId,
-                imageUrl: newImageUrl,
-              }),
-            });             
-            //if(!res.ok) {
-            //  console.log("error");
-            //} else {
+          options={{
+            sources: ['local', 'url', 'camera', 'google_drive', 'dropbox'],
+            resourceType: 'image',
+            clientAllowedFormats: ['gif', 'png', 'jpg', 'jpeg', 'heif'],
+          }}
+          uploadPreset={publicEnv.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET}
+          onSuccess={async (result) => {
+            //console.log(result);
+
+            if (result && typeof result.info === 'object' && 'secure_url' in result.info) {
+              const newImageUrl: string = String(result.info.secure_url);
+              const res = await fetch("/api/restaurants", {
+                method: "PUT",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  placeId: placeId,
+                  imageUrl: newImageUrl,
+                }),
+              });
+              //if(!res.ok) {
+              //  console.log("error");
+              //} else {
               setUrl(currentUrls => [...currentUrls, newImageUrl]);
               onNewImage(newImageUrl, placeId);
-            //}
-          }               
-        }}
-      >{({ open }) => {
-        return (
-          <Tooltip title={
-            <React.Fragment>
-              {isLoggedIn ? (
-                isWithinDistance 
-                  ? <span style={{ display: 'block', textAlign: 'center' }}>點擊上傳圖片 Click to Upload!<br />(It takes some time to display on the map)</span> 
-                  : <span>靠近餐廳可上傳圖片 Get Closer!</span>
-              ) : (
-                <span>登入並靠近餐廳可上傳圖片 Login to Upload!</span>
-              )}
-            </React.Fragment>
-          }  placement="bottom" arrow>
-          <CardMedia
-            className="relative"
-            component="img"
-            height="120"
-            // Use the current photo index to get the current photo URL
-            image={url.length > 0 && currentPhotoIndex < url.length ? url[currentPhotoIndex] : "/food_default.jpg"}
-            alt="Restaurant Photo"
-            onClick={isLoggedIn ? () => open() : undefined}
-          /></Tooltip>);
-        }}</CldUploadWidget>  
+              //}
+            }
+          }}
+        >{({ open }) => {
+          return (
+            <Tooltip title={
+              <React.Fragment>
+                {isLoggedIn ? (
+                  isWithinDistance
+                    ? <span style={{ display: 'block', textAlign: 'center' }}>點擊上傳圖片 Click to Upload!<br />(It takes some time to display on the map)</span>
+                    : <span>靠近餐廳可上傳圖片 Get Closer!</span>
+                ) : (
+                  <span>登入並靠近餐廳可上傳圖片 Login to Upload!</span>
+                )}
+              </React.Fragment>
+            } placement="bottom" arrow>
+              <CardMedia
+                className="relative"
+                component="img"
+                height="120"
+                // Use the current photo index to get the current photo URL
+                image={url.length > 0 && currentPhotoIndex < url.length ? url[currentPhotoIndex] : "/food_default.jpg"}
+                alt="Restaurant Photo"
+                onClick={isLoggedIn && isWithinDistance ? () => open() : undefined}
+              /></Tooltip>);
+        }}</CldUploadWidget>
           {showLeftArrow && <IconButton
             className="absolute left-0 top-0 bottom-0 my-auto mx-0 z-10"
             onClick={handleBeforePhoto}
@@ -503,22 +537,41 @@ export default function RestaurantCard({ name, address, types, lat, lng, userPos
             <Item className="flex items-center gap-3 w-full">
               <PaidIcon />
               <div className="text-start">
-                {priceLevel}
+                {displayExpense(averageExpense)}
               </div>
             </Item>
           </Stack>
         </CardContent>
         <CardActions disableSpacing>
-          <Tooltip title="加到最愛" placement="top">
-            <IconButton  style={{ color: isLiked ? 'red' : 'gray' }} aria-label="add to favorites" onClick={handleLike}>
+          <Tooltip title={isLiked ? "取消最愛" : "加到最愛"} placement="top">
+            <IconButton style={{ color: isLiked ? 'red' : 'gray' }} aria-label="add to favorites" onClick={handleLike}>
               <FavoriteIcon
               />
             </IconButton>
           </Tooltip>
-          <Tooltip title="分享" placement="top">
-            <IconButton aria-label="share">
-              <ShareIcon />
-            </IconButton>
+          <Tooltip title={isCopied ? "" : "分享"} placement="top">
+            <div style={{ position: 'relative' }}>
+              <IconButton aria-label="share" onClick={handleCopy}>
+                <ShareIcon />
+              </IconButton>
+              {isCopied && (
+                <div style={{
+                  position: 'absolute',
+                  left: '50%',
+                  transform: 'translateX(-50%) scale(1.2)',
+                  top: '-30px',
+                  fontSize: '10px',
+                  background: '#555', // Soft background color
+                  color: '#f2f2f2', // Font color
+                  borderRadius: '10px', // Rounded corners
+                  padding: '5px 10px',
+                  boxShadow: '0px 3px 6px rgba(0, 0, 0, 0.16)', // Subtle shadow
+                  animation: 'pop-in 0.3s ease-out',
+                }}>
+                  Copied!
+                </div>
+              )}
+            </div>
           </Tooltip>
 
           <ExpandMore
@@ -545,7 +598,21 @@ export default function RestaurantCard({ name, address, types, lat, lng, userPos
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
                   <Rating value={stars} onChange={(_, value) => {
                     setStars(value !== null ? value : 5);
-                  }} />
+                  }} /><p>&nbsp;</p><FormControl fullWidth>
+                  <InputLabel id="demo-simple-select-label">消費金額</InputLabel>
+                  <Select
+                    labelId="demo-simple-select-label"
+                    id="demo-simple-select"
+                    value={expense}
+                    label="Expense"
+                    onChange= {handleChangeExpense}
+                  >
+                    <MenuItem value={1}>$</MenuItem>
+                    <MenuItem value={2}>$$</MenuItem>
+                    <MenuItem value={3}>$$$</MenuItem>
+                    <MenuItem value={4}>$$$$</MenuItem>
+                  </Select>
+                </FormControl>
                   <TextField
                     label="留下您的評論..."
                     variant="outlined"
@@ -589,7 +656,7 @@ export default function RestaurantCard({ name, address, types, lat, lng, userPos
                     reviewDate={review.reviews.createdAt}
                     starsCount={review.reviews.stars}
                     content={review.reviews.content}
-                  //expense={review.reviewer.expense} // If you want to show the expense too
+                    expense={review.reviews.expense} // If you want to show the expense too
                   />
                 ))}
               </Stack></div>

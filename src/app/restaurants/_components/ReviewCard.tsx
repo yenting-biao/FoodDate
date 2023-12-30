@@ -24,12 +24,22 @@ type Props = {
   starsCount: number;
   content: string;
   userAvatarUrl:string;
+  expense: number;
 }
 
-export default function ReviewCard({ reviewId, username,userAvatarUrl,reviewerId, reviewDate, starsCount, content }: Props) {
+export default function ReviewCard({ reviewId, username,userAvatarUrl,reviewerId, reviewDate, starsCount, content,expense }: Props) {
   const [isDelete,setIsDelete] = useState(false);
   const { data: session, status } = useSession();
   const isCurrentUser = session?.user?.id === reviewerId;
+  const displayExpense = (value:number) => {
+    switch (value) {
+      case 1: return '$';
+      case 2: return '$$';
+      case 3: return '$$$';
+      case 4: return '$$$$';
+      default: return '';
+    }
+  };
   const hasMedia = false; // temporary
   useEffect(()=>{
     //console.log(session?.user?.username)
@@ -93,7 +103,7 @@ export default function ReviewCard({ reviewId, username,userAvatarUrl,reviewerId
               value={starsCount} 
               readOnly
               precision={0.1}
-            />                             
+            /><p style={{ fontSize: 'smaller', textAlign: 'right' }}>{displayExpense(expense)}</p>                             
           </Box>
           <Typography variant="body2" color="text.secondary">
             {content}

@@ -183,8 +183,70 @@ export default function RestaurantPage() {
   const [showOnlySel, setOnlySel] = useState(true);
   const [showTags, setShowTags] = useState(false);
   const [isSetting, setIsSetting] = useState(false);
+  const [currentDisplayIndex, setCurrentDisplayIndex] = useState(0);
+  const [isShuffling, setIsShuffling] = useState(false);
+  const startShuffling = () => {
+    setShowTags(false);
+    setAllRes(true);
+    if (restaurants.length > 0) {
+      setIsShuffling(true); // Set shuffling state to true
+  
+      // Random duration for shuffling between 3 to 5 seconds
+      const shuffleDuration = Math.random() * 2000 + 3000;
+      let finalRestaurant: { placeId: any; name: any; address: any; latitude: any; longitude: any; } | null = null;
+  
+      let shuffleInterval = setInterval(() => {
+        const shuffledRestaurants = shuffleArray(restaurants);
+        const suitableRestaurant = shuffledRestaurants.find(restaurant =>
+          restaurant.address.includes("大安區") || 
+          restaurant.address.includes("大安区") || 
+          restaurant.address.includes("中正區") || 
+          restaurant.address.includes("中正区")
+        );
+  
+        if (suitableRestaurant) {
+          setDisplayRestaurants([suitableRestaurant]); // Display the suitable restaurant
+          finalRestaurant = suitableRestaurant;
+        } else {
+          // If no suitable restaurant found, shuffle again
+          shuffleInterval = setInterval(() => {
+            const shuffledAgain = shuffleArray(restaurants);
+            const nextCandidate = shuffledAgain.find(restaurant =>
+              restaurant.address.includes("大安區") || 
+              restaurant.address.includes("大安区") || 
+              restaurant.address.includes("中正區") || 
+              restaurant.address.includes("中正区")
+            );
+  
+            if (nextCandidate) {
+              setDisplayRestaurants([nextCandidate]);
+              clearInterval(shuffleInterval);
+            }
+          }, 100);
+        }
+      }, 100); // Change the restaurant every 100 milliseconds
+  
+      // Stop shuffling after the random duration
+      setTimeout(() => {
+        clearInterval(shuffleInterval);
+        setIsShuffling(false);
+        if (finalRestaurant) {
+          handleMarkerClick(
+            finalRestaurant.placeId, 
+            finalRestaurant.name, 
+            finalRestaurant.address, 
+            finalRestaurant.latitude, 
+            finalRestaurant.longitude
+          );
+        }
+        // Optionally, display the final restaurant
+      }, shuffleDuration);
+    }
+  };
+  
+  
   const actions = [
-    { icon: <SwapHorizontalCircleIcon />, name: "幫抽要吃啥 Food Lottery", onClick: () => setShowRoulette(true) },
+    { icon: <SwapHorizontalCircleIcon />, name: "幫抽要吃啥 Food Lottery", onClick: ()=>startShuffling()/*() => setShowRoulette(true)*/ },
     { icon: <SettingsIcon />, name: isSetting ? "關閉顯示設定 Settings Off" : "開啟顯示設定 Settings On", onClick: () => setIsSetting(!isSetting) },
     ...isSetting ? [
       { icon: <DensitySmallIcon />, name: "顯示全部餐廳 Show All Restaurants", onClick: () => handleShowAllClick() },
@@ -201,23 +263,43 @@ export default function RestaurantPage() {
       )
     );
   };
-
+  const handleRemoveLike = (placeIdToRemove: string) => {
+    setTaggedRestaurants(currentTaggedRestaurants => {
+      if (currentTaggedRestaurants) {
+        return currentTaggedRestaurants.filter(place => place.placeId !== placeIdToRemove);
+      }
+      return currentTaggedRestaurants;
+    });
+  }
+  const handleAddLike = (placeIdToAdd: string) => {
+    setTaggedRestaurants(currentTaggedRestaurants => {
+        return currentTaggedRestaurants
+          ? [...currentTaggedRestaurants, { placeId: placeIdToAdd }]
+          : [{ placeId: placeIdToAdd }];
+    });
+  }
+  
 
   const handleShowAllClick = () => {
+    setDisplayRestaurants(restaurants);
+    setIsShuffling(false);
     setAllRes(true);
     setOnlySel(false);
     setShowTags(false);
   }
   const handleShowOnlySel = () => {
+    setDisplayRestaurants(restaurants);
+    setIsShuffling(false);
     setAllRes(false);
     setOnlySel(true);
     setShowTags(false);
   }
   const handleShowTags = () => {
-    if (showTags){
+    setDisplayRestaurants(restaurants);
+    setIsShuffling(false);
     setAllRes(false);
     setOnlySel(false);
-    setShowTags(true);}
+    setShowTags(true);
   }
 
   const blueMarkerIcon = {
@@ -399,6 +481,7 @@ export default function RestaurantPage() {
   };
   const [displayRestaurants, setDisplayRestaurants] = useState<Restaurant[]>([]);
   const shuffledRef = useRef(false);
+
   useEffect(() => {
     // Only shuffle the restaurants if they haven't been shuffled yet
     if (!shuffledRef.current && restaurants.length > 0) {
@@ -454,6 +537,8 @@ export default function RestaurantPage() {
                     placeId={selectRestaurantPlaceId}
                     reviews={reviews}
                     onNewImage={handleNewImage}
+                    onRemoveLike={handleRemoveLike}
+                    onAddLike={handleAddLike}
                   />}
                   {/*Array.from({ length: 0 }).map((_, index) => (
                     <RestaurantCard
@@ -500,6 +585,8 @@ export default function RestaurantPage() {
                       key={restaurant.placeId}
                       position={{ lat: restaurant.latitude, lng: restaurant.longitude }}
                       onClick={() => handleMarkerClick(restaurant.placeId, restaurant.name, restaurant.address, restaurant.latitude, restaurant.longitude)}
+                      className={`${isShuffling ? 'shuffling' : ''}`}
+
                     >
                       <div style={{
                         padding: '10px',
