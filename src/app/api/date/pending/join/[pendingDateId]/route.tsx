@@ -9,6 +9,8 @@ import {
   pendingDatesTable,
   pendingDateParticipantsTable,
   notificationsTable,
+  usersTable,
+  privateMessagesTable,
 } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import Pusher from "pusher";
@@ -68,8 +70,14 @@ export async function PUT(
     const participantIdsRet = await db
       .select({
         participantId: pendingDateParticipantsTable.participantId,
+        username: usersTable.username,
+        bio: usersTable.bio,
       })
       .from(pendingDateParticipantsTable)
+      .innerJoin(
+        usersTable,
+        eq(usersTable.userId, pendingDateParticipantsTable.participantId)
+      )
       .where(eq(pendingDateParticipantsTable.pendingDateId, pendingDateId))
       .execute();
     const participantIds = participantIdsRet.map((obj) => obj.participantId);
@@ -108,6 +116,14 @@ export async function PUT(
         await db.insert(dateParticipantsTable).values({
           dateId: newDate.dateId,
           participantId: participantIds[i],
+        });
+        await db.insert(privateMessagesTable).values({
+          dateId: newDate.dateId,
+          senderId: participantIds[i],
+          content:
+            participantIdsRet[i].username +
+            " 的自我介紹：\n" +
+            (participantIdsRet[i].bio ?? "[未寫自我介紹]"),
         });
         const [newNotif] = await db
           .insert(notificationsTable)
