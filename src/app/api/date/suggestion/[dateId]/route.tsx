@@ -143,7 +143,13 @@ export async function PUT(
     );
   }
 
-  const data: { placeId: string } = await req.json();
+  const data: {
+    placeId: string;
+    name: string;
+    address: string;
+    lat: number;
+    lng: number;
+  } = await req.json();
   const { placeId } = data;
   try {
     const [name] = await db
@@ -193,6 +199,10 @@ export async function PUT(
           senderId: "",
           senderUsername: "",
           content: newMessage.content,
+        });
+        await pusher.trigger(`private-${dateId}`, "suggestion", {
+          ...data,
+          add: true,
         });
       }
     }
@@ -259,12 +269,60 @@ export async function DELETE(
     );
   }
 
-  const data: { placeId: string } = await req.json();
+  const data: {
+    placeId: string;
+    name: string;
+    address: string;
+    lat: number;
+    lng: number;
+  } = await req.json();
   const { placeId } = data;
   try {
     await db
       .delete(suggestionsTable)
       .where(eq(suggestionsTable.placeId, placeId));
+
+    const [newMessage] = await db
+      .insert(privateMessagesTable)
+      .values({
+        dateId,
+        senderId: null,
+        content: `server:${session.user.username} 取消建議 ${data.name}`,
+      })
+      .returning();
+
+    const pusher = new Pusher({
+      appId: privateEnv.PUSHER_ID,
+      key: publicEnv.NEXT_PUBLIC_PUSHER_KEY,
+      secret: privateEnv.PUSHER_SECRET,
+      cluster: publicEnv.NEXT_PUBLIC_PUSHER_CLUSTER,
+      useTLS: true,
+    });
+
+    await pusher.trigger(`private-${dateId}`, "chat:send", {
+      messageId: newMessage.messageId,
+      senderId: null,
+      senderUsername: session.user.username,
+      content: newMessage.content,
+    });
+
+    const participants = await db
+      .select({
+        userId: dateParticipantsTable.participantId,
+      })
+      .from(dateParticipantsTable)
+      .where(and(eq(dateParticipantsTable.dateId, dateId)))
+      .execute();
+
+    const numOfParticipants = participants.length;
+    for (let i = 0; i < numOfParticipants; i++) {
+      if (participants[i].userId !== null) {
+        await pusher.trigger(`private-${dateId}`, "suggestion", {
+          ...data,
+          add: false,
+        });
+      }
+    }
 
     return NextResponse.json({ status: "ok" }, { status: 200 });
   } catch (error) {

@@ -75,7 +75,11 @@ export default function Chat() {
       const res2 = await fetch(`/api/date/suggestion/${dateId}`);
       const data: {
         participantUsernames: (string | null)[];
-        avatarUrls: { userId: string; username: string; avatarUrl: string | null }[];
+        avatarUrls: {
+          userId: string;
+          username: string;
+          avatarUrl: string | null;
+        }[];
         messages: Message[];
       } = await res.json();
       const data2: { suggestedRestaurants: selectedRestaurantType[] } =
@@ -103,6 +107,37 @@ export default function Chat() {
     const channelName = `private-${dateId}`;
     try {
       const channel = pusherClient.subscribe(channelName);
+
+      channel.bind(
+        "suggestion",
+        ({
+          placeId,
+          name,
+          address,
+          lat,
+          lng,
+          add,
+        }: selectedRestaurantType & { add: boolean }) => {
+          if (add) {
+            setSuggestedRestaurants((old) => [
+              {
+                placeId,
+                name,
+                address,
+                lat,
+                lng,
+              },
+              ...old,
+            ]);
+            router.refresh();
+          } else {
+            setSuggestedRestaurants((old) =>
+              old.filter((element) => element.placeId !== placeId)
+            );
+            router.refresh();
+          }
+        }
+      );
       channel.bind(
         "chat:send",
         ({
@@ -128,6 +163,7 @@ export default function Chat() {
       );
       return () => {
         channel.unbind("chat:send");
+        channel.unbind("suggestion");
         pusherClient.unsubscribe(channelName);
       };
     } catch (error) {
@@ -201,6 +237,10 @@ export default function Chat() {
               },
               body: JSON.stringify({
                 placeId,
+                name,
+                address: addr,
+                lat: event.detail.latLng.lat,
+                lng: event.detail.latLng.lng,
               }),
             });
             setSuggestedRestaurants((old) => [
@@ -221,6 +261,10 @@ export default function Chat() {
               },
               body: JSON.stringify({
                 placeId,
+                name,
+                address: addr,
+                lat: event.detail.latLng.lat,
+                lng: event.detail.latLng.lng,
               }),
             });
             setSuggestedRestaurants((old) =>
