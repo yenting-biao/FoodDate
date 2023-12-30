@@ -214,6 +214,7 @@ export default function RestaurantCard({ name, address, types, lat, lng, userPos
   const [isLiked, setIsLiked] = useState<boolean>();
   const [isCopied, setIsCopied] = useState(false);
   const router = useRouter();
+
   useEffect(() => {
     const checkTag = async () => {
       try {
@@ -403,10 +404,10 @@ export default function RestaurantCard({ name, address, types, lat, lng, userPos
   };
   const displayExpense = (value:number) => {
     switch (value) {
-      case 1: return '$';
-      case 2: return '$$';
-      case 3: return '$$$';
-      case 4: return '$$$$';
+      case 1: return '$（200元以內）';
+      case 2: return '$$（400元以內）';
+      case 3: return '$$$（600元以內）';
+      case 4: return '$$$$（600元以上）';
       default: return '尚無消費資訊';
     }
   };
@@ -607,10 +608,10 @@ export default function RestaurantCard({ name, address, types, lat, lng, userPos
                     label="Expense"
                     onChange= {handleChangeExpense}
                   >
-                    <MenuItem value={1}>$</MenuItem>
-                    <MenuItem value={2}>$$</MenuItem>
-                    <MenuItem value={3}>$$$</MenuItem>
-                    <MenuItem value={4}>$$$$</MenuItem>
+                    <MenuItem value={1}>$（200元以內）</MenuItem>
+                    <MenuItem value={2}>$$（400元以內）</MenuItem>
+                    <MenuItem value={3}>$$$（600元以內）</MenuItem>
+                    <MenuItem value={4}>$$$$（600元以上）</MenuItem>
                   </Select>
                 </FormControl>
                   <TextField

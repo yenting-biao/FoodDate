@@ -1,8 +1,18 @@
 import { styled, alpha } from '@mui/material/styles';
 import { InputBase } from "@mui/material";
 import SearchIcon from '@mui/icons-material/Search';
-
-export default function SearchBar() {
+import { useState } from 'react';
+interface SearchBarProps {
+  onSearch: (searchText: string) => void;
+}
+export default function SearchBar({ onSearch }: SearchBarProps) {
+  const [searchText, setSearchText] = useState('');
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchText(event.target.value);
+    if (onSearch) {
+      onSearch(event.target.value);
+    }
+  };
   const Search = styled('div')(({ theme }) => ({
     position: 'relative',
     borderRadius: theme.shape.borderRadius,
@@ -40,13 +50,11 @@ export default function SearchBar() {
       <SearchIconWrapper>
         <SearchIcon />
       </SearchIconWrapper>
-      <StyledInputBase
+      <StyledInputBase autoFocus
+        value={searchText}
+        onChange={handleInputChange}
         placeholder="Search for restaurant..."
-        inputProps={{
-          'aria-label': 'search',
-          'id': 'restaurant-search',
-          'name': 'restaurantSearch'
-        }}
+       
         className="border-2 rounded-full w-full"
       />
     </Search>
