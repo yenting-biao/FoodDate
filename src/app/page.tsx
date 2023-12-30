@@ -12,7 +12,7 @@ export default async function Home () {
   return (
     <>
       <div className="relative flex flex-col p-5 gap-0 text-xl z-10 animate-slide-up">
-        <div className="self-start flex items-end gap-3 mt-44 md:text-6xl sm:text-5xl xs:text-4xl p-5">
+        <div className="self-start flex items-end gap-3 mt-32 md:text-6xl sm:text-5xl xs:text-4xl p-5">
           <Image
             src="/map-and-location.png"
             alt="Food Date"
