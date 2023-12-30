@@ -506,6 +506,32 @@ export default function RestaurantPage() {
       if (addr.includes("大安區") || addr.includes("大安区") || addr.includes("中正區") || addr.includes("中正区")) {
         if (data.types.includes("restaurant")) {
           // the only correct use operation
+          console.log("data", data);
+          const res = await fetch("/api/restaurants/create", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              placeId,
+              name,
+              address: addr,
+              latitude: event.detail.latLng.lat,
+              longitude: event.detail.latLng.lng,
+              types: data.types,
+            }),
+          });
+
+          if (!res.ok) {
+            const err = await res.json();
+            console.log("error post", err);
+          } else if (res.status == 302) {
+            console.log("Already in db");
+          } else {
+            console.log("Add to db");
+          }
+
+
           setPosition({ lat: event.detail.latLng.lat, lng: event.detail.latLng.lng });
           setRestaurantName(name);
           setRestaurantAddress(addr);
