@@ -23,7 +23,14 @@ import {
   Modal,
   Box,
   Button,
-  Tooltip
+  Tooltip,
+  Dialog,
+  IconButton,
+  DialogTitle,
+  DialogContent,
+  ListItem,
+  List,
+  DialogActions
 } from "@mui/material";
 import NavigationIcon from '@mui/icons-material/Navigation';
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -33,6 +40,7 @@ import FavoriteIcon from '@mui/icons-material/Favorite';
 import DensitySmallIcon from '@mui/icons-material/DensitySmall';
 import QuizIcon from '@mui/icons-material/Quiz';
 import CancelIcon from '@mui/icons-material/Cancel';
+import CloseIcon from '@mui/icons-material/Close';
 
 import SearchBar from "./_components/SearchBar";
 import RestaurantCard from "./_components/RestaurantCard";
@@ -105,7 +113,26 @@ export default function RestaurantPage() {
   const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant>();
   const [selectImageUrls, setSelectImageUrls] = useState([]);
   const initialized = useRef(false);
-  const {data: session, status} = useSession();
+  const [loading,setLoading] = useState(false);
+  const { data: session, status,update } = useSession();
+  const handleVerify = async () => {
+    setLoading(true);
+    const addCoinRes = await fetch("/api/profile",{
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json" },
+        body: JSON.stringify({
+          coins: -50,
+        })
+      })
+      if (!addCoinRes.ok){
+        return;
+      }
+      setLoading(false);
+      startShuffling();
+      update();
+      return;
+    };
   useEffect(() => {
 
     const fetchRestaurants = async () => {
@@ -185,25 +212,26 @@ export default function RestaurantPage() {
   const [isSetting, setIsSetting] = useState(false);
   const [currentDisplayIndex, setCurrentDisplayIndex] = useState(0);
   const [isShuffling, setIsShuffling] = useState(false);
-  const startShuffling = () => {
+  const startShuffling = async () => {
+    handleClose();
     setShowTags(false);
     setAllRes(true);
     if (restaurants.length > 0) {
       setIsShuffling(true); // Set shuffling state to true
-  
+
       // Random duration for shuffling between 3 to 5 seconds
       const shuffleDuration = Math.random() * 2000 + 3000;
       let finalRestaurant: { placeId: any; name: any; address: any; latitude: any; longitude: any; } | null = null;
-  
+
       let shuffleInterval = setInterval(() => {
         const shuffledRestaurants = shuffleArray(restaurants);
         const suitableRestaurant = shuffledRestaurants.find(restaurant =>
-          restaurant.address.includes("大安區") || 
-          restaurant.address.includes("大安区") || 
-          restaurant.address.includes("中正區") || 
+          restaurant.address.includes("大安區") ||
+          restaurant.address.includes("大安区") ||
+          restaurant.address.includes("中正區") ||
           restaurant.address.includes("中正区")
         );
-  
+
         if (suitableRestaurant) {
           setDisplayRestaurants([suitableRestaurant]); // Display the suitable restaurant
           finalRestaurant = suitableRestaurant;
@@ -212,12 +240,12 @@ export default function RestaurantPage() {
           shuffleInterval = setInterval(() => {
             const shuffledAgain = shuffleArray(restaurants);
             const nextCandidate = shuffledAgain.find(restaurant =>
-              restaurant.address.includes("大安區") || 
-              restaurant.address.includes("大安区") || 
-              restaurant.address.includes("中正區") || 
+              restaurant.address.includes("大安區") ||
+              restaurant.address.includes("大安区") ||
+              restaurant.address.includes("中正區") ||
               restaurant.address.includes("中正区")
             );
-  
+
             if (nextCandidate) {
               setDisplayRestaurants([nextCandidate]);
               clearInterval(shuffleInterval);
@@ -225,17 +253,17 @@ export default function RestaurantPage() {
           }, 100);
         }
       }, 100); // Change the restaurant every 100 milliseconds
-  
+
       // Stop shuffling after the random duration
       setTimeout(() => {
         clearInterval(shuffleInterval);
         setIsShuffling(false);
         if (finalRestaurant) {
           handleMarkerClick(
-            finalRestaurant.placeId, 
-            finalRestaurant.name, 
-            finalRestaurant.address, 
-            finalRestaurant.latitude, 
+            finalRestaurant.placeId,
+            finalRestaurant.name,
+            finalRestaurant.address,
+            finalRestaurant.latitude,
             finalRestaurant.longitude
           );
         }
@@ -243,10 +271,10 @@ export default function RestaurantPage() {
       }, shuffleDuration);
     }
   };
-  
-  
+
+
   const actions = [
-    { icon: <SwapHorizontalCircleIcon />, name: "幫抽要吃啥 Food Lottery", onClick: ()=>startShuffling()/*() => setShowRoulette(true)*/ },
+    { icon: <SwapHorizontalCircleIcon />, name: "幫抽要吃啥 Food Lottery", onClick: () => handleOpen()/*() => setShowRoulette(true)*/ },
     { icon: <SettingsIcon />, name: isSetting ? "關閉顯示設定 Settings Off" : "開啟顯示設定 Settings On", onClick: () => setIsSetting(!isSetting) },
     ...isSetting ? [
       { icon: <DensitySmallIcon />, name: "顯示全部餐廳 Show All Restaurants", onClick: () => handleShowAllClick() },
@@ -255,8 +283,8 @@ export default function RestaurantPage() {
     ] : []
   ];
   const handleNewImage = (newImageUrl: string, placeId: string) => {
-    setRestaurants(currentRestaurants => 
-      currentRestaurants.map(restaurant => 
+    setRestaurants(currentRestaurants =>
+      currentRestaurants.map(restaurant =>
         restaurant.placeId === placeId
           ? { ...restaurant, imageUrls: JSON.stringify([newImageUrl, ...(JSON.parse(restaurant.imageUrls || '[]'))]) }
           : restaurant
@@ -273,12 +301,16 @@ export default function RestaurantPage() {
   }
   const handleAddLike = (placeIdToAdd: string) => {
     setTaggedRestaurants(currentTaggedRestaurants => {
-        return currentTaggedRestaurants
-          ? [...currentTaggedRestaurants, { placeId: placeIdToAdd }]
-          : [{ placeId: placeIdToAdd }];
+      return currentTaggedRestaurants
+        ? [...currentTaggedRestaurants, { placeId: placeIdToAdd }]
+        : [{ placeId: placeIdToAdd }];
     });
   }
-  
+  const [searchParam, setSearchParam] = useState("");
+
+  const handleSearch = (text: string) => {
+    setSearchParam(text);
+  };
 
   const handleShowAllClick = () => {
     setDisplayRestaurants(restaurants);
@@ -307,8 +339,8 @@ export default function RestaurantPage() {
   };
   const handleMarkerClick = async (placeId: any, name: any, address: any, lat: any, lng: any) => {
     //setSelectRestaurant(false)
-    try{
-      const res = await fetch('api/restaurants',{
+    try {
+      const res = await fetch('api/restaurants', {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -317,15 +349,15 @@ export default function RestaurantPage() {
           placeId
         }),
       });
-      if (!res.ok){
+      if (!res.ok) {
         return;
       }
       const data = await res.json();
       const imageUrls = JSON.parse(data[0].imageUrls);
       //console.log(imageUrls);
       setSelectImageUrls(imageUrls);
-    }catch(error){
-      
+    } catch (error) {
+
     }
     const foundRestaurant = restaurants.find(restaurant => restaurant.name === name);
     setSelectedRestaurant(foundRestaurant);
@@ -481,7 +513,15 @@ export default function RestaurantPage() {
   };
   const [displayRestaurants, setDisplayRestaurants] = useState<Restaurant[]>([]);
   const shuffledRef = useRef(false);
+  const [openDialog, setOpenDialog] = useState(false);
 
+  const handleOpen = () => {
+    setOpenDialog(true);
+  };
+
+  const handleClose = () => {
+    setOpenDialog(false);
+  };
   useEffect(() => {
     // Only shuffle the restaurants if they haven't been shuffled yet
     if (!shuffledRef.current && restaurants.length > 0) {
@@ -504,7 +544,7 @@ export default function RestaurantPage() {
     <>
       <main className="flex h-full items-center justify-center w-full">
         <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!}>
-          {(selectRestaurant&&
+          {(selectRestaurant &&
             <div className="flex flex-col h-full w-2/5 p-1 gap-3">
               <button
                 onClick={() => setSelectRestaurant(false)}
@@ -512,10 +552,8 @@ export default function RestaurantPage() {
               >
                 <CancelIcon />
               </button>
-              <div className="flex w-full p-2">
-                <SearchBar />
-              </div>
-              <Divider />
+
+
               <div className="h-full overflow-y-scroll p-3">
                 <Stack spacing={2}>
                   {<RestaurantCard
@@ -580,7 +618,7 @@ export default function RestaurantPage() {
                     }
                   }
                   const isFullDesign = index < threshold;
-                  return ((isFullDesign && showOnlySel) || showAllRes || (showTags &&taggedRestaurants&& taggedRestaurants.some(taggedRestaurant => taggedRestaurant.placeId === restaurant.placeId))) &&
+                  return ((isFullDesign && showOnlySel) || showAllRes || (showTags && taggedRestaurants && taggedRestaurants.some(taggedRestaurant => taggedRestaurant.placeId === restaurant.placeId))) && (restaurant.name.toLowerCase().includes(searchParam.toLowerCase())) &&
                     <AdvancedMarker
                       key={restaurant.placeId}
                       position={{ lat: restaurant.latitude, lng: restaurant.longitude }}
@@ -616,7 +654,7 @@ export default function RestaurantPage() {
                         }}>{truncatedName}</div>
                       </div>
                     </AdvancedMarker>
-                  
+
                 }
                 return null;
               })}
@@ -664,7 +702,29 @@ export default function RestaurantPage() {
                 ))}
               </SpeedDial>
             </Tooltip>
-
+            <Dialog onClose={handleClose} open={openDialog}>
+              <DialogTitle className="font-semibold" style={{ borderBottom: 'none' }}>
+                選擇困難者的福音！
+              </DialogTitle>
+              <IconButton
+                aria-label="close"
+                onClick={handleClose}
+                sx={{
+                  position: 'absolute',
+                  right: 8,
+                  top: 12,
+                  color: (theme) => theme.palette.grey[500],
+                }}
+              >
+                <CloseIcon />
+              </IconButton>
+              <DialogContent dividers style={{ borderTop: 'none' }} className="pt-1">
+                <p>每次抽獎花費50金幣！幫您決定今天最棒的餐廳！(你還有{session?.user?.coins}金幣)</p>
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={handleVerify} disabled={loading}>確定</Button>
+              </DialogActions>
+            </Dialog>
 
 
             <Modal
