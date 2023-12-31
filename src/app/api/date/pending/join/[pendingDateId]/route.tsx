@@ -67,7 +67,7 @@ export async function PUT(
         { status: 400 }
       );
 
-    const participantIdsRet = await db
+    let participantIdsRet = await db
       .select({
         participantId: pendingDateParticipantsTable.participantId,
         username: usersTable.username,
@@ -94,12 +94,31 @@ export async function PUT(
       participantId: userId,
     });
 
+    participantIdsRet = await db
+      .select({
+        participantId: pendingDateParticipantsTable.participantId,
+        username: usersTable.username,
+        bio: usersTable.bio,
+      })
+      .from(pendingDateParticipantsTable)
+      .innerJoin(
+        usersTable,
+        eq(usersTable.userId, pendingDateParticipantsTable.participantId)
+      )
+      .where(eq(pendingDateParticipantsTable.pendingDateId, pendingDateId))
+      .execute();
+
     if (pendingDate.remainingSlots > 1) {
       await db
         .update(pendingDatesTable)
         .set({ remainingSlots: pendingDate.remainingSlots - 1 })
         .where(eq(pendingDatesTable.pendingDateId, pendingDateId));
     } else {
+      await db
+        .delete(pendingDatesTable)
+        .where(eq(pendingDatesTable.pendingDateId, pendingDateId));
+      // pendingDateParticipants should be deleted by CASCADE trigger
+
       const [newDate] = await db.insert(datesTable).values({}).returning();
       participantIds.push(userId);
 
@@ -142,10 +161,6 @@ export async function PUT(
           read: false,
         });
       }
-      await db
-        .delete(pendingDatesTable)
-        .where(eq(pendingDatesTable.pendingDateId, pendingDateId));
-      // pendingDateParticipants should be deleted by CASCADE trigger
     }
     return NextResponse.json({ status: "ok" }, { status: 200 });
   } catch (error) {
