@@ -271,7 +271,7 @@ export const taggedRestaurantsRelations = relations(
 );
 
 export const pendingDatesTable = pgTable(
-  "pendingDates",
+  "pendingdates",
   {
     pendingDateId: uuid("pendingdateid").primaryKey().notNull().defaultRandom(),
     participantCount: integer("participantcount").notNull(),
