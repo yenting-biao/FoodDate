@@ -11,6 +11,9 @@ import {
 import { desc, eq } from "drizzle-orm";
 import { db } from "@/db";
 
+export const revalidate = 0;
+export const dynamic = "force-dynamic";
+
 export type datePreviewType = {
   dateId: string;
   title: string;
