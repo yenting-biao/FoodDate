@@ -3,6 +3,8 @@ import { getFutureMission, getInProgressMission, getPastMission, getRandomPlaceI
 import NewMissionForm from "./_components/NewMissionForm";
 import MissionTableContainer from "./_components/MissionTableContainer";
 
+export const dynamic = 'force-dynamic';
+
 export default async function AdminMissionPage () {
   const inProgressMission = await getInProgressMission();
   const futureMission = await getFutureMission();
