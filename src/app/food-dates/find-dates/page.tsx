@@ -9,6 +9,9 @@ import { Check } from "lucide-react";
 import { pusherClient } from "@/lib/pusher/client";
 import { useRouter } from "next/navigation";
 
+export const revalidate = 0;
+export const dynamic = "force-dynamic";
+
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
   function Alert(props, ref) {
     return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
