@@ -1,6 +1,4 @@
-# [121-1] Web Programming Final 
-
-## (Group 03) 不揪 Food Date
+## 不揪 Food Date
 
 ## Intro
 
