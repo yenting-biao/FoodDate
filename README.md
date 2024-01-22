@@ -1,14 +1,29 @@
-# 不揪 Food Date
+# [121-1] Web Programming Final 
 
-_不揪 Food Date_ is a powerful restaurant gathering app.
+## (Group 03) 不揪 Food Date
 
-## For development only
+## Intro
+
+_不揪 Food Date_ is a powerful restaurant gathering app. Each user can browse a map with all restaurant near NTU we recommended. It also includes a powerful food lottery, which can help you deciding what to eat. After you got some thoughts, you can use our remarkable date-matching system, join a date with other foodies! Also, we've got a user's coin ranking system and a list of missions and games, great news for those who want to get coins for fun.
+
+## Packages/Framework/Code Ref
+
+react-google-maps Docs: [https://visgl.github.io/react-google-maps/](https://visgl.github.io/react-google-maps/)
+
+roulette code ref:
+<https://github.com/effectussoftware/react-custom-roulette>
+<https://www.npmjs.com/package/react-custom-roulette?activeTab=readme>
+
+## Packages/Framework/Code Used
+
+Next.JS, Tailwind CSS, Material UI, Material Icon, Lucide React Icon, Pusher, Cloudinary, react-linkify, zod, react-custom-roulette, vis.gl/react-google-maps, Google Maps API, Next auth, Drizzle ORM, PostgreSQL
+
+
+# About the App
 
 ### Warnings
 
-- Please do not refresh or reload the website unless necessary. Each refresh uses a quota.
-- Please DO NOT commit any API keys to the repository. If you need to use an API key,
-  put it in `.env` and do not commit it (`.env` is included in `.gitignore`).
+- Please prevent refreshing or reloading the website unless necessary. Each refresh uses a quota.
 
 ### Running the app
 
@@ -18,7 +33,8 @@ _不揪 Food Date_ is a powerful restaurant gathering app.
    yarn install
    ```
 
-2. Create a copy of `.env.example` as `.env.local` and replace `"YOUR-API-KEY-HERE"` with your Google API key and `"YOUR-MAP-ID-HERE"` with your Map ID.
+2. Create a copy of `.env.example` as `.env.local` and replace `"YOUR-API-KEY-HERE"` with your Google API key and `"YOUR-MAP-ID-HERE"` with your Map ID, replace  `POSTGRES_URL_HERE` with the postgresURL, finally fill up pusher settings. You can also adjust `NEXT_PUBLIC_VERIFY_DISTANCE_BASE` if you are too lazy to walk near to any restaurants.
+
 
 3. Run migrations
 
@@ -34,6 +50,6 @@ _不揪 Food Date_ is a powerful restaurant gathering app.
 
 5. Open http://localhost:3000 in your browser
 
-### Resources
 
-react-google-maps Docs: [https://visgl.github.io/react-google-maps/](https://visgl.github.io/react-google-maps/)
+### Disclaimer
+此專題為自行發想，如有雷同，純屬巧合
