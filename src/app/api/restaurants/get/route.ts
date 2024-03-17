@@ -4,7 +4,7 @@ import { sql } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
-  try {
+  try { 
     // Assuming the SQL database supports ORDER BY RANDOM() function
     // This is common in SQLite and PostgreSQL, but may differ in other databases
     const randomRestaurant = await db
